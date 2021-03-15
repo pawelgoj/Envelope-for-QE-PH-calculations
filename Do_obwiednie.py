@@ -10,23 +10,32 @@ import scipy.stats as stats
 from classes import *
 import matplotlib.pyplot as plt
        
-print("Insert the width of the Gaussian curve, number of pints, file name and label name")
+print("Insert the: dynmat/txt, width of the Gaussian curve, number of pints, file name and label name")
 
 #dane wejsciowe
 try:
+    format_of_file = str(input())
     Q = float(input())
     Nr_points = int(input())
     name_of_file= str(input())
     label = str(input())
 except:
-    print("Wrong file name or width of the Gaussian curve")
+    print("Wrong inputs")
     
 #miejsce od ktorego maja byc wczytywane dane z pliku tekstowego
-Start_data_read_in_line = "# mode"
+if format_of_file == "dynmat":
+    Start_data_read_in_line = "# mode"
 
-#wczywywanie danych
-dane1 = Dane(name_of_file, Start_data_read_in_line)
-list_of_mods = dane1.wczytaj()
+    #wczywywanie danych
+    dane1 = Dane(name_of_file, Start_data_read_in_line)
+    list_of_mods = dane1.wczytaj()
+elif format_of_file == "txt":
+    Start_data_read_in_line = ""
+    #wczywywanie danych
+    dane1 = Dane(name_of_file, Start_data_read_in_line)
+    list_of_mods = dane1.wczytaj()
+else:
+    raise Exception("File format not supported") 
 
 list_of_mods1 = List_of_mods(list_of_mods)
 
@@ -44,6 +53,9 @@ Results(ir_envelpe, "IR").print_fig(label)
 
 Results(raman_envelpe, "Raman").save(label)
 Results(ir_envelpe, "IR").save(label)
+
+Results(raman_envelpe, "Raman").save_fig(label)
+Results(ir_envelpe, "IR").save_fig(label)
 
 
     
