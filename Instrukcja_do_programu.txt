@@ -1,0 +1,23 @@
+Program tworzy obwiednie dla obliczonych widm IR i Raman 
+
+program włączamy za pomoca: python3 Do_obwiednie.py
+
+Działa w dwuch trybach txt i dynmat 
+
+txt - wyczytuje dane z odpowiedznio sformatowanego pliku txt, przykładowy plik to: plik.txt
+dynmat - plik out programu dynmat (Quantum essprseso) 
+
+Dane wejściowe do programu wpisujemy w takiej kolejnosci do konsoli: 
+
+dynmat/txt
+5
+1000
+dynmat.out/dane.txt
+Nazwa 
+
+
+dynmat/txt - albo dynmat albo txt 
+5 - szrokosc gaussa (odchylenie standardowe) 
+1000 - ilosc punktow
+dynmat.out/dane.txt - nazwa wczytywanego pliku dynmat lub txt
+Nazwa - dziedziczona dla wynikow 

@@ -21,13 +21,14 @@ class Dane:
            print("There is no such file!!!")
            
        line = ""
-
-       while self.Start_data_read_in_line not in line: 
-           line = file.readline()
+       if self.Start_data_read_in_line != "":
+           while self.Start_data_read_in_line not in line: 
+               line = file.readline()
            
        list_of_mods =[]
        line = file.readline()
-       while "\n" != line:
+       line = file.readline()
+       while not "" == line or "\n" == line :
            splited = line.split()
            mod = []
            for x in splited: 
@@ -42,29 +43,47 @@ class List_of_mods:
     def __init__(self, list_of_mods):
         self.list_of_mods = list_of_mods
     def max_min(self):
-        min_of = math.ceil(float(self.list_of_mods[0][1]) - 1)
+        if len(self.list_of_mods[0]) == 3:
+            i = 0
+        else:
+            i = 1
+        min_of = math.ceil(float(self.list_of_mods[0][i]) - 1)
         lenght = len(self.list_of_mods) - 1
-        max_of = math.ceil(float(self.list_of_mods[lenght][1]) + 100)
+        max_of = math.ceil(float(self.list_of_mods[lenght][i]) + 100)
         return min_of, max_of
     def raman(self):
-        x1, x2, x3, x4, x5, x6 = zip(*self.list_of_mods)
-        raman = list(zip(x2, x5))
-        del x1
-        del x2
-        del x3 
-        del x4
-        del x5
-        del x6
+        if len(self.list_of_mods[0]) == 3:
+            x1, x2, x3 = zip(*self.list_of_mods)
+            raman = list(zip(x1, x3))
+            del x1 
+            del x2
+            del x3 
+        else:
+            x1, x2, x3, x4, x5, x6 = zip(*self.list_of_mods)
+            raman = list(zip(x2, x5))
+            del x1
+            del x2
+            del x3 
+            del x4
+            del x5
+            del x6
         return raman
     def ir(self):
-        x1, x2, x3, x4, x5, x6 = zip(*self.list_of_mods)
-        ir = list(zip(x2, x4))
-        del x1
-        del x2
-        del x3 
-        del x4
-        del x5
-        del x6
+        if len(self.list_of_mods[0]) == 3:
+            x1, x2, x3 = zip(*self.list_of_mods)
+            ir = list(zip(x1, x2))
+            del x1 
+            del x2
+            del x3 
+        else:
+            x1, x2, x3, x4, x5, x6 = zip(*self.list_of_mods)
+            ir = list(zip(x2, x4))
+            del x1
+            del x2
+            del x3 
+            del x4
+            del x5
+            del x6
         return ir
 
 #liczy gaussy dla modow
@@ -123,10 +142,23 @@ class Results:
     def print_fig(self, label):
         x = self.wyniki[0, 0:]
         y = self.wyniki[1, 0:]
-        Fig_title = "{}_{}.txt"
+        Fig_title = "{}_{}"
         plt.xlabel("cm^-1")
         plt.ylabel("Intensity")
         plt.title(Fig_title.format(label, self.name))
         plt.plot(x, y)
         plt.show()
+        return
+    def save_fig(self, label):
+        x = self.wyniki[0, 0:]
+        y = self.wyniki[1, 0:]
+        Fig_title = "{}_{}"
+        plt.xlabel("cm^-1")
+        plt.ylabel("Intensity")
+        plt.title(Fig_title.format(label, self.name))
+        plt.plot(x, y)
+        name = "{}_{}.png"
+        name1 = name.format(label, self.name)
+        plt.savefig(name1, dpi=600)
+        plt.close()
         return
