@@ -32,7 +32,7 @@ class Dane:
            splited = line.split()
            mod = []
            for x in splited: 
-               mod.append(x)
+               mod.append(float(x))
            list_of_mods.append(mod)
            line = file.readline()  
        file.close()
@@ -47,9 +47,9 @@ class List_of_mods:
             i = 0
         else:
             i = 1
-        min_of = math.ceil(float(self.list_of_mods[0][i]) - 1)
+        min_of = math.ceil(self.list_of_mods[0][i] - 1)
         lenght = len(self.list_of_mods) - 1
-        max_of = math.ceil(float(self.list_of_mods[lenght][i]) + 100)
+        max_of = math.ceil(self.list_of_mods[lenght][i] + 100)
         return min_of, max_of
     def raman(self):
         if len(self.list_of_mods[0]) == 3:
@@ -118,8 +118,8 @@ class Envelope:
     def do_envelope(self):
         wyniki = np.zeros((2,self.Nr_points))
         for i in range(0, len(self.curve)):
-            if float(self.curve[i][1]) > 0.0005:
-                wyniki1 = np.array(Gauss(float(self.curve[i][1]), float(self.curve[i][0]), self.Nr_points, self.Q, self.minimum, self.maximum).gausscurve())
+            if self.curve[i][1] > 0.001:
+                wyniki1 = np.array(Gauss(self.curve[i][1], self.curve[i][0], self.Nr_points, self.Q, self.minimum, self.maximum).gausscurve())
                 wyniki[0,0:] = wyniki1[0,0:]
                 wyniki[1,0:] = wyniki1[1,0:] + wyniki[1,0:]
         return wyniki 
@@ -139,24 +139,48 @@ class Results:
             results.write(str(self.wyniki[0, i]) + " " + str(self.wyniki[1, i]) + "\n")
         results.close()
         return
-    def print_fig(self, label):
-        x = self.wyniki[0, 0:]
-        y = self.wyniki[1, 0:]
+    def print_fig(self, label, intensity):
+        x = np.array(self.wyniki[0, 0:])
+        y = np.array(self.wyniki[1, 0:])
         Fig_title = "{}_{}"
         plt.xlabel("cm^-1")
         plt.ylabel("Intensity")
         plt.title(Fig_title.format(label, self.name))
         plt.plot(x, y)
+        y = np.zeros(len(y))
+        j = 0
+        for i in range(0, len(x) -1):
+            if (x[i] <= intensity[j][0]) and (intensity[j][0] <= x[i+1]):
+                while intensity[j][0] <= x[i+1]:
+                    y[i] = y[i] + np.array(intensity[j][1])
+                    j +=1
+                    if j == (len(intensity) - 1):
+                        break
+            else:
+                y[i] = 0
+        plt.stem(x, y, markerfmt='none', linefmt='red', basefmt='none')
         plt.show()
         return
-    def save_fig(self, label):
-        x = self.wyniki[0, 0:]
-        y = self.wyniki[1, 0:]
+    def save_fig(self, label, intensity):
+        x = np.array(self.wyniki[0, 0:]) # w ten sposob jest kopiowana lista/wektor gdyby bylo a = nazaw_listy to jest to odwołanie do obiektu i on sie wtedy zmienia
+        y = np.array(self.wyniki[1, 0:])
         Fig_title = "{}_{}"
         plt.xlabel("cm^-1")
         plt.ylabel("Intensity")
         plt.title(Fig_title.format(label, self.name))
         plt.plot(x, y)
+        y = np.zeros(len(y))
+        j = 0
+        for i in range(0, len(x) -1):
+            if (x[i] <= intensity[j][0]) and (intensity[j][0] <= x[i+1]):
+                while intensity[j][0] <= x[i+1]:
+                    y[i] = y[i] + np.array(intensity[j][1])
+                    j +=1
+                    if j == (len(intensity) - 1):
+                        break
+            else:
+                y[i] = 0
+        plt.stem(x, y, markerfmt='none', linefmt='red', basefmt='none') 
         name = "{}_{}.png"
         name1 = name.format(label, self.name)
         plt.savefig(name1, dpi=600)
