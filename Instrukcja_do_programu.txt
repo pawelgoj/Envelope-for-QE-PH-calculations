@@ -14,7 +14,7 @@ dynmat/txt
 1000
 dynmat.out/dane.txt
 Nazwa 
-
+IR/Raman
 
 dynmat/txt - albo dynmat albo txt 
 5 - szrokosc gaussa (odchylenie standardowe) 
