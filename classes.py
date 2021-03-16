@@ -27,8 +27,9 @@ class Dane:
            
        list_of_mods =[]
        line = file.readline()
-       line = file.readline()
-       while not "" == line or "\n" == line :
+       if self.Start_data_read_in_line == "":
+           line = file.readline()
+       while not ("" == line or "\n" == line) :
            splited = line.split()
            mod = []
            for x in splited: 
