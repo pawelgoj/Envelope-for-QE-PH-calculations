@@ -9,8 +9,12 @@ import math as math
 import scipy.stats as stats
 from classes import *
 import matplotlib.pyplot as plt
+
+nazwa_obw_1 = "Raman"
+nazwa_obw_2 = "IR"
        
 print("Insert the: dynmat/txt, width of the Gaussian curve, number of pints, file name and label name")
+
 
 #dane wejsciowe
 try:
@@ -19,6 +23,7 @@ try:
     Nr_points = int(input())
     name_of_file= str(input())
     label = str(input())
+    Ir_Raman =str(input())
 except:
     print("Wrong inputs")
     
@@ -37,26 +42,36 @@ elif format_of_file == "txt":
 else:
     raise Exception("File format not supported") 
 
+print("Data loaded")
 list_of_mods1 = List_of_mods(list_of_mods)
 
 minimum, maximum = list_of_mods1.max_min()
-raman = list_of_mods1.raman() #lista modow raman
-ir = list_of_mods1.ir() #lista modow IR
+if Ir_Raman == nazwa_obw_1:
+    raman = list_of_mods1.raman() #lista modow raman
+elif Ir_Raman == nazwa_obw_2:
+    ir = list_of_mods1.ir() #lista modow IR
+else: 
+    raman = list_of_mods1.raman()
+    ir = list_of_mods1.ir()
 
 #Tworzenie obwiedni 
-raman_envelpe = Envelope(raman, Nr_points, Q, minimum, maximum).do_envelope()
-ir_envelpe = Envelope(ir, Nr_points, Q, minimum, maximum).do_envelope()
-
+if Ir_Raman != nazwa_obw_2:
+    raman_envelpe = Envelope(raman, Nr_points, Q, minimum, maximum).do_envelope()
+    print("raman envelope done")
+if Ir_Raman != nazwa_obw_1:
+    ir_envelpe = Envelope(ir, Nr_points, Q, minimum, maximum).do_envelope()
+    print("IR envelope done")
 #Wypisywanie rezultatow
-Results(raman_envelpe, "Raman").print_fig(label)
-Results(ir_envelpe, "IR").print_fig(label)
-
-Results(raman_envelpe, "Raman").save(label)
-Results(ir_envelpe, "IR").save(label)
-
-Results(raman_envelpe, "Raman").save_fig(label)
-Results(ir_envelpe, "IR").save_fig(label)
-
-
-    
-
+if Ir_Raman != nazwa_obw_2:
+    Results(raman_envelpe, "Raman").print_fig(label, raman)
+if Ir_Raman != nazwa_obw_1:
+    Results(ir_envelpe, "IR").print_fig(label, ir)
+if Ir_Raman != nazwa_obw_2:
+    Results(raman_envelpe, "Raman").save(label)
+if Ir_Raman != nazwa_obw_1:
+    Results(ir_envelpe, "IR").save(label)
+if Ir_Raman != nazwa_obw_2:
+    Results(raman_envelpe, "Raman").save_fig(label, raman)
+if Ir_Raman != nazwa_obw_1:
+    Results(ir_envelpe, "IR").save_fig(label, ir)
+print("result saved")
