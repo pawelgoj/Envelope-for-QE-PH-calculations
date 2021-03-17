@@ -13,19 +13,23 @@ import matplotlib.pyplot as plt
 nazwa_obw_1 = "Raman"
 nazwa_obw_2 = "IR"
        
-print("Insert the: dynmat/txt, width of the Gaussian curve, number of pints, file name and label name")
+print("Insert the: dynmat/txt, type of band curve, width of the curves, number of pints, file name, label name and Raman/IR/Both")
 
 
 #dane wejsciowe
 try:
-    format_of_file = str(input())
-    Q = float(input())
-    Nr_points = int(input())
-    name_of_file= str(input())
-    label = str(input())
-    Ir_Raman =str(input())
+    format_of_file = str(input()) #format of file txt or dynmat
+    type_of_band = str(input()) #Gauss, Lorentz, Voigt
+    width_bands = str(input()) #Q-Gauss and Q-Lorentz
+    Nr_points = int(input()) #number of points in Envelope 
+    name_of_file= str(input()) #Name of file with data 
+    label = str(input()) #Label of output files 
+    Ir_Raman =str(input()) #Envelope for Raman or IR or Both 
 except:
     print("Wrong inputs")
+    
+if (type_of_band != "Gauss" and type_of_band != "Lorentz" and type_of_band != "Voigt"):
+    raise Exception("Wrong name of gauss like curve!!!") 
     
 #miejsce od ktorego maja byc wczytywane dane z pliku tekstowego
 if format_of_file == "dynmat":
@@ -55,11 +59,19 @@ else:
     ir = list_of_mods1.ir()
 
 #Tworzenie obwiedni 
+if type_of_band == "Voigt":
+    splited = width_bands.split()
+    Q = float(splited[0])
+    Q2 = float(splited[1])
+else: 
+    Q = float(width_bands.split()[0])
+    Q2 = 0
+    
 if Ir_Raman != nazwa_obw_2:
-    raman_envelpe = Envelope(raman, Nr_points, Q, minimum, maximum).do_envelope()
+    raman_envelpe = Envelope(raman, Nr_points, Q, minimum, maximum).do_envelope(type_of_band, Q2)
     print("raman envelope done")
 if Ir_Raman != nazwa_obw_1:
-    ir_envelpe = Envelope(ir, Nr_points, Q, minimum, maximum).do_envelope()
+    ir_envelpe = Envelope(ir, Nr_points, Q, minimum, maximum).do_envelope(type_of_band, Q2)
     print("IR envelope done")
 #Wypisywanie rezultatow
 if Ir_Raman != nazwa_obw_2:

@@ -3,21 +3,21 @@ Program tworzy obwiednie dla obliczonych widm IR i Raman
 program włączamy za pomoca: python3 Do_obwiednie.py
 
 Działa w dwuch trybach txt i dynmat 
+Trzy typy krzywych przybliżających pasma.: Gauss/Lorentz/Voigt
+Najszybciej działa Voigt
 
 txt - wyczytuje dane z odpowiedznio sformatowanego pliku txt, przykładowy plik to: plik.txt
 dynmat - plik out programu dynmat (Quantum essprseso) 
 
 Dane wejściowe do programu wpisujemy w takiej kolejnosci do konsoli: 
 
-dynmat/txt
-5
-1000
-dynmat.out/dane.txt
-Nazwa 
-IR/Raman
+dynmat/txt -format pliku, przykładowy txt to: plik.txt
+Gauss/Lorentz/Voigt - typ krzywej przybliżającej pasma 
+szerokość połówkowa Gauss lub Lorentz/ dwa paramery szerokości poluwkowej dla voigt: pierwsza dla udziału Gauss druga dla Lorentza 
+Ilość punktów w obwiedni 
+Nazwa pliku z danymi: (dynmat lub txt)
+Nazwa dziedziczona przez wyniki 
+IR/Raman/Both -tylkoliczy dla Ramana lub IR lub dla obu. Jeśli nic nie wpisane liczy dla obu.
+ 
+przykładowe dane wejsciowe: Voigt.in, Gauss.in
 
-dynmat/txt - albo dynmat albo txt 
-5 - szrokosc gaussa (odchylenie standardowe) 
-1000 - ilosc punktow
-dynmat.out/dane.txt - nazwa wczytywanego pliku dynmat lub txt
-Nazwa - dziedziczona dla wynikow 
