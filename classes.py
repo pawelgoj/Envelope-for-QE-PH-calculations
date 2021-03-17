@@ -5,6 +5,7 @@ Created on Sun Mar 14 23:16:18 2021
 @author: pagoj
 """
 import math as math
+import scipy.special as special
 import scipy.stats as stats
 import numpy as np
 import matplotlib.pyplot as plt
@@ -103,7 +104,7 @@ class List_of_mods:
         return ir
 
 #liczy gaussy dla modow
-class Gauss:
+class Pasmo:
     def __init__(self, Intensity, wavenumber, number_of_points,  Q, minimum, maximum):
         self.Intensity = Intensity
         self.wavenumber = wavenumber
@@ -122,6 +123,28 @@ class Gauss:
             curve[0, i] = x
             x += delta
         return curve
+    def cauchycurve(self):
+        delta = (self.maximum - self.minimum)/self.number_of_points
+        x = self.minimum
+        curve = np.zeros((2,self.number_of_points))
+        cauchy_max = stats.cauchy.pdf(self.wavenumber, loc=self.wavenumber, scale=self.Q)
+        scale = 1 / cauchy_max
+        for i in range(1, self.number_of_points):
+            curve[1, i] = round(self.Intensity * scale * stats.cauchy.pdf(x, loc=self.wavenumber, scale=self.Q), 4)
+            curve[0, i] = x
+            x += delta
+        return curve
+    def voigtcurve(self, Q2):
+        delta = (self.maximum - self.minimum)/self.number_of_points
+        x = self.minimum
+        curve = np.zeros((2,self.number_of_points))
+        voigt_max = special.voigt_profile(0, self.Q, Q2)
+        scale = 1 / voigt_max
+        for i in range(1, self.number_of_points):
+            curve[1, i] = round(self.Intensity * scale * special.voigt_profile(x - self.wavenumber, self.Q, Q2), 4)
+            curve[0, i] = x
+            x += delta
+        return curve       
 
 #Tworzy obwiednie 
 class Envelope:
@@ -131,14 +154,28 @@ class Envelope:
         self.Q = Q
         self.minimum = minimum
         self.maximum = maximum
-    def do_envelope(self):
+    def do_envelope(self, type_band, Q2):
         wyniki = np.zeros((2,self.Nr_points))
-        for i in range(0, len(self.curve)):
-            if self.curve[i][1] > 0.001:
-                wyniki1 = np.array(Gauss(self.curve[i][1], self.curve[i][0], self.Nr_points, self.Q, self.minimum, self.maximum).gausscurve())
-                wyniki[0,0:] = wyniki1[0,0:]
-                wyniki[1,0:] = wyniki1[1,0:] + wyniki[1,0:]
-        return wyniki 
+        if type_band == "Lorentz":
+            for i in range(0, len(self.curve)):
+                if self.curve[i][1] > 0.001:
+                    wyniki1 = np.array(Pasmo(self.curve[i][1], self.curve[i][0], self.Nr_points, self.Q, self.minimum, self.maximum).cauchycurve())
+                    wyniki[0,0:] = wyniki1[0,0:]
+                    wyniki[1,0:] = wyniki1[1,0:] + wyniki[1,0:]
+        elif type_band == "Voigt":
+            for i in range(0, len(self.curve)):
+                if self.curve[i][1] > 0.001:
+                    wyniki1 = np.array(Pasmo(self.curve[i][1], self.curve[i][0], self.Nr_points, self.Q, self.minimum, self.maximum).voigtcurve(Q2))
+                    wyniki[0,0:] = wyniki1[0,0:]
+                    wyniki[1,0:] = wyniki1[1,0:] + wyniki[1,0:]
+        else:
+            for i in range(0, len(self.curve)):
+                if self.curve[i][1] > 0.001:
+                    wyniki1 = np.array(Pasmo(self.curve[i][1], self.curve[i][0], self.Nr_points, self.Q, self.minimum, self.maximum).gausscurve())
+                    wyniki[0,0:] = wyniki1[0,0:]
+                    wyniki[1,0:] = wyniki1[1,0:] + wyniki[1,0:]
+                    
+        return wyniki
 
 #Wyniki, metowy wypisywanie do pliku tekstowego, worzenie wykresu z wykorzystaniem matplotlib
 class Results: 
@@ -151,7 +188,7 @@ class Results:
         results.write("cm-1 Intensity \n")
         results.write("\n")
         colums = self.wyniki.shape 
-        for i in range(0, colums[1]): 
+        for i in range(1, colums[1]): 
             results.write(str(self.wyniki[0, i]) + " " + str(self.wyniki[1, i]) + "\n")
         results.close()
         return
