@@ -117,7 +117,7 @@ class Gauss:
         curve = np.zeros((2,self.number_of_points))
         max_gauss = stats.norm.pdf(self.wavenumber, loc=self.wavenumber, scale=self.Q)
         scale = 1 / max_gauss
-        for i in range(0, self.number_of_points):
+        for i in range(1, self.number_of_points):
             curve[1, i] = round(self.Intensity * scale * stats.norm.pdf(x, loc=self.wavenumber, scale=self.Q), 4)
             curve[0, i] = x
             x += delta
