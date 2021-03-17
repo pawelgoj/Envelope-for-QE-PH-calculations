@@ -9,7 +9,22 @@ import scipy.stats as stats
 import numpy as np
 import matplotlib.pyplot as plt
 
-#Kasa obiektów dane, metoda wczytaj wczytuje dane z pliku i zwraca tablicę z wczytanymi danymi
+def int_bonds(x, y, intensity):
+    y = np.zeros(len(y))
+    j = 0
+    for i in range(0, len(x) -1):
+        if (x[i] <= intensity[j][0]) and (intensity[j][0] <= x[i+1]):
+            if j < (len(intensity) -1): 
+                while intensity[j][0] <= x[i+1]:
+                    y[i] = y[i] + np.array(intensity[j][1])
+                    j +=1
+                    if j == (len(intensity) - 1):
+                        break
+        else:
+            y[i] = 0
+    return y
+
+#Klasa obiektów dane, metoda wczytaj- wczytuje dane z pliku i zwraca tablicę z wczytanymi danymi
 class Dane:
    def __init__(self, name_of_file, Start_data_read_in_line):
        self.name_of_file = name_of_file
@@ -48,7 +63,7 @@ class List_of_mods:
             i = 0
         else:
             i = 1
-        min_of = math.ceil(self.list_of_mods[0][i] - 1)
+        min_of = math.ceil(self.list_of_mods[0][i] - 5)
         lenght = len(self.list_of_mods) - 1
         max_of = math.ceil(self.list_of_mods[lenght][i] + 100)
         return min_of, max_of
@@ -148,17 +163,7 @@ class Results:
         plt.ylabel("Intensity")
         plt.title(Fig_title.format(label, self.name))
         plt.plot(x, y)
-        y = np.zeros(len(y))
-        j = 0
-        for i in range(0, len(x) -1):
-            if (x[i] <= intensity[j][0]) and (intensity[j][0] <= x[i+1]):
-                while intensity[j][0] <= x[i+1]:
-                    y[i] = y[i] + np.array(intensity[j][1])
-                    j +=1
-                    if j == (len(intensity) - 1):
-                        break
-            else:
-                y[i] = 0
+        y = int_bonds(x, y, intensity)
         plt.stem(x, y, markerfmt='none', linefmt='red', basefmt='none')
         plt.show()
         return
@@ -172,15 +177,7 @@ class Results:
         plt.plot(x, y)
         y = np.zeros(len(y))
         j = 0
-        for i in range(0, len(x) -1):
-            if (x[i] <= intensity[j][0]) and (intensity[j][0] <= x[i+1]):
-                while intensity[j][0] <= x[i+1]:
-                    y[i] = y[i] + np.array(intensity[j][1])
-                    j +=1
-                    if j == (len(intensity) - 1):
-                        break
-            else:
-                y[i] = 0
+        y = int_bonds(x, y, intensity)
         plt.stem(x, y, markerfmt='none', linefmt='red', basefmt='none') 
         name = "{}_{}.png"
         name1 = name.format(label, self.name)
