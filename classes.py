@@ -10,19 +10,24 @@ import scipy.stats as stats
 import numpy as np
 import matplotlib.pyplot as plt
 
+#Nanosi na wykres połozenia pasm policzone z QE
 def int_bonds(x, y, intensity):
     y = np.zeros(len(y))
     j = 0
-    for i in range(0, len(x) -1):
-        if (x[i] <= intensity[j][0]) and (intensity[j][0] <= x[i+1]):
-            if j < (len(intensity) -1): 
+    
+    for i in range(0, len(x) -2):
+        if j > (len(intensity) -1):
+            break
+        else:
+            if (x[i] <= intensity[j][0]) and (intensity[j][0] <= x[i+1]): 
                 while intensity[j][0] <= x[i+1]:
                     y[i] = y[i] + np.array(intensity[j][1])
                     j +=1
-                    if j == (len(intensity) - 1):
+                    if j > (len(intensity) -1):
                         break
-        else:
-            y[i] = 0
+            else:
+                y[i] = 0
+    
     return y
 
 #Klasa obiektów dane, metoda wczytaj- wczytuje dane z pliku i zwraca tablicę z wczytanymi danymi
