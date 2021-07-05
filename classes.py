@@ -5,12 +5,13 @@ Created on Sun Mar 14 23:16:18 2021
 @author: pagoj
 """
 import math as math
+from typing import Tuple
 import scipy.special as special
 import scipy.stats as stats
 import numpy as np
 import matplotlib.pyplot as plt
 
-#Nanosi na wykres połozenia pasm policzone z QE
+#Plots the strand positions calculated from QE on the graph
 def int_bonds(x, y, intensity):
     y = np.zeros(len(y))
     j = 0
@@ -30,58 +31,75 @@ def int_bonds(x, y, intensity):
     
     return y
 
-#Klasa obiektów dane, metoda wczytaj- wczytuje dane z pliku i zwraca tablicę z wczytanymi danymi
 class Dane:
-   def __init__(self, name_of_file, Start_data_read_in_line):
-       self.name_of_file = name_of_file
-       self.Start_data_read_in_line = Start_data_read_in_line
-   def wczytaj(self):
+    """Class dane, objects are data read from a dynmat or txt file.
+    """
+    def __init__(self, nameOfFile: str, StartDataReadInLine: str):
+       self.nameOfFile = nameOfFile
+       self.StartDataReadInLine = StartDataReadInLine
+    def wczytaj(self) -> list:
+       """Loads a file and returns a list of mods 
+
+       Returns:
+           list: List of mods 
+       """
        try:  
-           file = open(self.name_of_file, "r")
+           file = open(self.nameOfFile, "r")
        except: 
            print("There is no such file!!!")
            
        line = ""
-       if self.Start_data_read_in_line != "":
-           while self.Start_data_read_in_line not in line: 
+       if self.StartDataReadInLine != "":
+           while self.StartDataReadInLine not in line: 
                line = file.readline()
            
-       list_of_mods =[]
+       listOfMods =[]
        line = file.readline()
-       if self.Start_data_read_in_line == "":
+       if self.StartDataReadInLine == "":
            line = file.readline()
        while not ("" == line or "\n" == line) :
            splited = line.split()
            mod = []
            for x in splited: 
                mod.append(float(x))
-           list_of_mods.append(mod)
+           listOfMods.append(mod)
            line = file.readline()  
        file.close()
-       return list_of_mods  
+       return listOfMods  
 
-#obiekt lista modow, metody: zwraca wartosc najwieksz i najmniejsza, zwraca intensywnosci dla ramana i IR
-class List_of_mods:
-    def __init__(self, list_of_mods):
-        self.list_of_mods = list_of_mods
-    def max_min(self):
-        if len(self.list_of_mods[0]) == 3:
+class ListOfMods:
+    """The object is the mods tables from loaded files
+    """
+    def __init__(self, listOfMods: list):
+        self.listOfMods = listOfMods
+    def max_min(self) -> tuple:
+        """Return max and min wavenumber from list of mods 
+
+        Returns:
+            tuple: min, max
+        """
+        if len(self.listOfMods[0]) == 3:
             i = 0
         else:
             i = 1
-        min_of = math.ceil(self.list_of_mods[0][i] - 5)
-        lenght = len(self.list_of_mods) - 1
-        max_of = math.ceil(self.list_of_mods[lenght][i] + 100)
-        return min_of, max_of
-    def raman(self):
-        if len(self.list_of_mods[0]) == 3:
-            x1, x2, x3 = zip(*self.list_of_mods)
+        minOf = math.ceil(self.listOfMods[0][i] - 5)
+        lenght = len(self.listOfMods) - 1
+        maxOf = math.ceil(self.listOfMods[lenght][i] + 100)
+        return minOf, maxOf
+    def raman(self) -> list:
+        """Return list of raman mods.
+
+        Returns:
+            list: list of Raman mods 
+        """
+        if len(self.listOfMods[0]) == 3:
+            x1, x2, x3 = zip(*self.listOfMods)
             raman = list(zip(x1, x3))
             del x1 
             del x2
             del x3 
         else:
-            x1, x2, x3, x4, x5, x6 = zip(*self.list_of_mods)
+            x1, x2, x3, x4, x5, x6 = zip(*self.listOfMods)
             raman = list(zip(x2, x5))
             del x1
             del x2
@@ -90,15 +108,21 @@ class List_of_mods:
             del x5
             del x6
         return raman
-    def ir(self):
-        if len(self.list_of_mods[0]) == 3:
-            x1, x2, x3 = zip(*self.list_of_mods)
+
+    def ir(self) -> list:
+        """Return list of ir mods.
+
+        Returns:
+            list: list of ir mods 
+        """
+        if len(self.listOfMods[0]) == 3:
+            x1, x2, x3 = zip(*self.listOfMods)
             ir = list(zip(x1, x2))
             del x1 
             del x2
             del x3 
         else:
-            x1, x2, x3, x4, x5, x6 = zip(*self.list_of_mods)
+            x1, x2, x3, x4, x5, x6 = zip(*self.listOfMods)
             ir = list(zip(x2, x4))
             del x1
             del x2
@@ -108,86 +132,116 @@ class List_of_mods:
             del x6
         return ir
 
-#liczy gaussy dla modow
 class Pasmo:
-    def __init__(self, Intensity, wavenumber, number_of_points,  Q, minimum, maximum):
+    """Objects are a single band.
+    """
+    def __init__(self, Intensity: float, wavenumber: float, numberOfPoints: int,  Q: float, minimum: float, maximum: float):
         self.Intensity = Intensity
         self.wavenumber = wavenumber
-        self.number_of_points = number_of_points
+        self.numberOfPoints = numberOfPoints
         self.Q = Q
         self.maximum = maximum
         self.minimum = minimum
-    def gausscurve(self):
-        delta = (self.maximum - self.minimum)/self.number_of_points
+    def gausscurve(self) -> np.array:
+        """Return a gaussian curve  for band
+
+        Returns:
+            np.array: gaussian curve  for band
+        """
+        delta = (self.maximum - self.minimum)/self.numberOfPoints
         x = self.minimum
-        curve = np.zeros((2,self.number_of_points))
-        max_gauss = stats.norm.pdf(self.wavenumber, loc=self.wavenumber, scale=self.Q)
-        scale = 1 / max_gauss
-        for i in range(1, self.number_of_points):
+        curve = np.zeros((2,self.numberOfPoints))
+        maxGauss = stats.norm.pdf(self.wavenumber, loc=self.wavenumber, scale=self.Q)
+        scale = 1 / maxGauss
+        for i in range(1, self.numberOfPoints):
             curve[1, i] = round(self.Intensity * scale * stats.norm.pdf(x, loc=self.wavenumber, scale=self.Q), 4)
             curve[0, i] = x
             x += delta
         return curve
-    def cauchycurve(self):
-        delta = (self.maximum - self.minimum)/self.number_of_points
+    def cauchycurve(self) -> np.array:
+        """Return a cauchy curve  for band
+
+        Returns:
+            np.array: cauchy curve  for band
+        """
+        delta = (self.maximum - self.minimum)/self.numberOfPoints
         x = self.minimum
-        curve = np.zeros((2,self.number_of_points))
-        cauchy_max = stats.cauchy.pdf(self.wavenumber, loc=self.wavenumber, scale=self.Q)
-        scale = 1 / cauchy_max
-        for i in range(1, self.number_of_points):
+        curve = np.zeros((2,self.numberOfPoints))
+        cauchyMax = stats.cauchy.pdf(self.wavenumber, loc=self.wavenumber, scale=self.Q)
+        scale = 1 / cauchyMax
+        for i in range(1, self.numberOfPoints):
             curve[1, i] = round(self.Intensity * scale * stats.cauchy.pdf(x, loc=self.wavenumber, scale=self.Q), 4)
             curve[0, i] = x
             x += delta
         return curve
-    def voigtcurve(self, Q2):
-        delta = (self.maximum - self.minimum)/self.number_of_points
+    def voigtcurve(self, Q2) -> np.array:
+        """Return a voigt curve  for band
+        This mathod is the fastes. 
+        Returns:
+            np.array: voigt curve  for band
+        """
+        delta = (self.maximum - self.minimum)/self.numberOfPoints
         x = self.minimum
-        curve = np.zeros((2,self.number_of_points))
-        voigt_max = special.voigt_profile(0, self.Q, Q2)
-        scale = 1 / voigt_max
-        for i in range(1, self.number_of_points):
+        curve = np.zeros((2,self.numberOfPoints))
+        voigtMax = special.voigt_profile(0, self.Q, Q2)
+        scale = 1 / voigtMax
+        for i in range(1, self.numberOfPoints):
             curve[1, i] = round(self.Intensity * scale * special.voigt_profile(x - self.wavenumber, self.Q, Q2), 4)
             curve[0, i] = x
             x += delta
         return curve       
-
-#Tworzy obwiednie 
+ 
 class Envelope:
-    def __init__(self, curve, Nr_points, Q, minimum, maximum):
+    """objects are lists of bands for Raman or Ir"""
+    def __init__(self, curve: list, NrPoints: int, Q: float, minimum: float, maximum: float):
         self.curve = curve
-        self.Nr_points = Nr_points
+        self.NrPoints = NrPoints
         self.Q = Q
         self.minimum = minimum
         self.maximum = maximum
-    def do_envelope(self, type_band, Q2):
-        wyniki = np.zeros((2,self.Nr_points))
-        if type_band == "Lorentz":
+    def do_envelope(self, typeBand: str, Q2: float) -> np.array:
+        """Returns an envelope
+
+        Args:
+            typeBand (str): Gauss/Cauchy/Voigt 
+            Q2 (float): Q2 for Voigt curve 
+
+        Returns:
+            np.array: envelope 
+        """
+        wyniki = np.zeros((2,self.NrPoints))
+        if typeBand == "Lorentz":
             for i in range(0, len(self.curve)):
                 if self.curve[i][1] > 0.001:
-                    wyniki1 = np.array(Pasmo(self.curve[i][1], self.curve[i][0], self.Nr_points, self.Q, self.minimum, self.maximum).cauchycurve())
+                    wyniki1 = np.array(Pasmo(self.curve[i][1], self.curve[i][0], self.NrPoints, self.Q, self.minimum, self.maximum).cauchycurve())
                     wyniki[0,0:] = wyniki1[0,0:]
                     wyniki[1,0:] = wyniki1[1,0:] + wyniki[1,0:]
-        elif type_band == "Voigt":
+        elif typeBand == "Voigt":
             for i in range(0, len(self.curve)):
                 if self.curve[i][1] > 0.001:
-                    wyniki1 = np.array(Pasmo(self.curve[i][1], self.curve[i][0], self.Nr_points, self.Q, self.minimum, self.maximum).voigtcurve(Q2))
+                    wyniki1 = np.array(Pasmo(self.curve[i][1], self.curve[i][0], self.NrPoints, self.Q, self.minimum, self.maximum).voigtcurve(Q2))
                     wyniki[0,0:] = wyniki1[0,0:]
                     wyniki[1,0:] = wyniki1[1,0:] + wyniki[1,0:]
         else:
             for i in range(0, len(self.curve)):
                 if self.curve[i][1] > 0.001:
-                    wyniki1 = np.array(Pasmo(self.curve[i][1], self.curve[i][0], self.Nr_points, self.Q, self.minimum, self.maximum).gausscurve())
+                    wyniki1 = np.array(Pasmo(self.curve[i][1], self.curve[i][0], self.NrPoints, self.Q, self.minimum, self.maximum).gausscurve())
                     wyniki[0,0:] = wyniki1[0,0:]
                     wyniki[1,0:] = wyniki1[1,0:] + wyniki[1,0:]
                     
         return wyniki
 
-#Wyniki, metowy wypisywanie do pliku tekstowego, worzenie wykresu z wykorzystaniem matplotlib
 class Results: 
-    def __init__(self, wyniki, name):
+    """Objects are the results to save or draw"""
+    def __init__(self, wyniki: np.array, name: str):
         self.wyniki = wyniki 
         self.name = name
-    def save(self, label):
+    def save(self, label: str):
+        """save results 
+
+        Args:
+            label (str): Name of envelope eg. Raman or IR
+        """
         file_name = "{}_{}.txt"
         results = open(file_name.format(label, self.name), "w")
         results.write("cm-1 Intensity \n")
@@ -197,7 +251,13 @@ class Results:
             results.write(str(self.wyniki[0, i]) + " " + str(self.wyniki[1, i]) + "\n")
         results.close()
         return
-    def print_fig(self, label, intensity):
+    def print_fig(self, label: str, intensity: list):
+        """Print fig 
+
+        Args:
+            label (str): Name of envelope eg. Raman or IR
+            intensity (list): List of mods 
+        """
         x = np.array(self.wyniki[0, 0:])
         y = np.array(self.wyniki[1, 0:])
         Fig_title = "{}_{}"
@@ -209,8 +269,14 @@ class Results:
         plt.stem(x, y, markerfmt='none', linefmt='red', basefmt='none')
         plt.show()
         return
-    def save_fig(self, label, intensity):
-        x = np.array(self.wyniki[0, 0:]) # w ten sposob jest kopiowana lista/wektor gdyby bylo a = nazaw_listy to jest to odwołanie do obiektu i on sie wtedy zmienia
+    def save_fig(self, label: str, intensity: list):
+        """save fig 
+
+        Args:
+            label (str): Name of envelope eg. Raman or IR
+            intensity (list): List of mods 
+        """
+        x = np.array(self.wyniki[0, 0:]) 
         y = np.array(self.wyniki[1, 0:])
         Fig_title = "{}_{}"
         plt.xlabel("cm^-1")
