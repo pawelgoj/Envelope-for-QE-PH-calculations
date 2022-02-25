@@ -17,7 +17,7 @@ szerokość połówkowa Gauss lub Lorentz/ dwa paramery szerokości poluwkowej d
 Ilość punktów w obwiedni 
 Nazwa pliku z danymi: (dynmat lub txt)
 Nazwa dziedziczona przez wyniki 
-IR/Raman/Both -tylkoliczy dla Ramana lub IR lub dla obu. Jeśli nic nie wpisane liczy dla obu.
+IR/Raman/Both -tylko liczy dla Ramana lub IR lub dla obu. Jeśli nic nie wpisane liczy dla obu.
  
 przykładowe dane wejsciowe: Voigt.in, Gauss.in
 
