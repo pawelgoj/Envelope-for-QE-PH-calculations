@@ -31,6 +31,8 @@ class TestDoEnvelopwe(Preconditions):
     
     def test_input(self, script_runner, mocker):
         
+        # the script_runner and mocker patch make ability to test console behave of user. 
+        
         mocker.patch('builtins.input', side_effect= ['dynmat', 'Voigt', '5 1', 'proportional', '500', 'dynmatAlPO3_3.out', 'AlPO4', 'Both'])
         ret = script_runner.run('do_envelope.py')
         assert ret.success
