@@ -37,7 +37,7 @@ class Dane:
        self.name_of_file = name_of_file
        self.start_data_read_in_line = start_data_read_in_line
        
-    def wczytaj(self) -> list:
+    def load_file(self):
        """Loads a file and returns a list of mods 
 
        Returns:
@@ -47,18 +47,22 @@ class Dane:
            file = open(self.name_of_file, "r")
        except: 
            print("There is no such file!!!")
+        
+       Dane.read_data(file, self.start_data_read_in_line)
            
+    @staticmethod     
+    def read_data(file, start_data_read_in_line: str) -> list:
        line = ""
        
-       if self.start_data_read_in_line != "":
+       if start_data_read_in_line != "":
            
-           while self.start_data_read_in_line not in line: 
+           while start_data_read_in_line not in line: 
                line = file.readline()
            
        list_of_mods =[]
        line = file.readline()
        
-       if self.start_data_read_in_line == "":
+       if start_data_read_in_line == "":
            line = file.readline()
            
        while not ("" == line or "\n" == line) :

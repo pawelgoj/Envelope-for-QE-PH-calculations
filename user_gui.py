@@ -5,6 +5,9 @@ from tkinter import filedialog
 from tkinter.messagebox import showinfo
 from menu_functions import MenuFunctions
 from pandas import DataFrame
+import re
+
+from do_envelope import *
 
 from matplotlib.backends.backend_tkagg import (
     FigureCanvasTkAgg, NavigationToolbar2Tk)
@@ -19,23 +22,60 @@ class Navigation:
     @staticmethod 
     def use_mouse_wheel(event):
         second_canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        
+class CallBacks: 
+    @staticmethod
+    def get_folder_path():
+        
+        global file
+        
+        file = filedialog.askopenfile(mode='r')
+        check_file_type = file.name
+
+        global file_type 
+        if re.search(".txt$", check_file_type):
+            file_type = 'txt'
+        else:
+            file_type = 'dynmat'
+            
+    @staticmethod
+    def make_enevelopes():
+        #Envelope for Raman or IR or Both
+        if raman_check == True and ir_check == True:
+            ir_raman = 'Both'
+        elif raman_check == True:
+            ir_raman = 'Raman'
+        elif ir_check == True:
+            ir_raman = 'IR'
+        else:
+            raise Exception('You do not chose Raman or/and IR!')
+            
+        
+        du_envelope = DuEnvelope(file_type, type_bound, application_gui.entry_standard_deviation, 
+                                 application_gui.entry_scale_param, proportional_check, 
+                                 application_gui.entry_number_of_points, file, ir_raman)
+        du_envelope.make_envelopes()
+        #TODO schow figs of envelopes
 
 #switch off message. 
 class NavigationToolbar(NavigationToolbar2Tk):
-    def set_message(self):
+    def set_message(self, s):
         pass  
     
-class FigureCanvas(FigureCanvasTkAgg):
-    def __init__(self, fig, master, row, column):
-        super().__init__(fig, master=master)
-        self.draw()
-        self.toolbar_ir = NavigationToolbar(self, master, pack_toolbar=False)
-        self.toolbar_ir.update()
-        self.toolbar_ir.grid(column=column, row=(row+1), pady=20)
-        self = self.get_tk_widget()
-        self.bind('<MouseWheel>', Navigation.use_mouse_wheel)
-        self.grid(column=column, row=row, padx=20)   
-          
+class FigureCanvas:
+    def __init__(self, fig, master, row: int, column: int):
+        self.figure = FigureCanvasTkAgg(fig, master=master)
+        self.figure.draw()
+        
+        self.toolbar = NavigationToolbar(self.figure, master, pack_toolbar=False)
+        self.toolbar.update()
+        self.toolbar.grid(column=0, row=(row+1), pady=20)
+        
+        self.canvas_fig = self.figure.get_tk_widget()
+        self.canvas_fig.bind('<MouseWheel>', Navigation.use_mouse_wheel)
+        self.canvas_fig.grid(column=column, row=row, padx=20)
+           
+         
         
 class WidgetInApp(ABC):
     def add_mouse_wheel_interaction(self):
@@ -43,7 +83,7 @@ class WidgetInApp(ABC):
         
 class PrograsBarrInApp(WidgetInApp, ttk.Progressbar):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__( *args, **kwargs)
         self.add_mouse_wheel_interaction()
                 
 class LabelInApp(tk.Label, WidgetInApp):
@@ -142,7 +182,7 @@ class MakeEnvelope(tk.Tk):
         
         #ico
         self.iconphoto(False, tk.PhotoImage(file='fig_logo.png'))
-        #self.iconphoto(False, tk.PhotoImage(file=(PATH_TO_IMAGES + 'image/icon.png')))
+
 
         self.resizable(width=True, height=True)
         self.windowingsystem = 'win32'
@@ -187,7 +227,7 @@ class MakeEnvelope(tk.Tk):
         
         
         #This canvas have dimension equal to content in it and don't fills main canvas
-        self.second_canvas = CanvaInApp(main_canvas, self.background_color, highlightthickness=0, width=1300, height=1000)
+        self.second_canvas = CanvaInApp(main_canvas, self.background_color, highlightthickness=0, width=1300, height=850)
         second_canvas = self.second_canvas
         
 
@@ -217,13 +257,13 @@ class MakeEnvelope(tk.Tk):
         self.frame.grid(sticky = 'nw')
 
         #create window to display frame grid
-        second_canvas.create_window((0,0), window=self.frame, anchor="nw", height=1000)
+        second_canvas.create_window((0,0), window=self.frame, anchor="nw", height=850)
         
         self.frame_with_buttons = FrameInApp(self.frame, self.background_color)
-        self.frame_with_buttons.grid(column=0, row=0, stick='nw', pady=5)
+        self.frame_with_buttons.grid(column=0, row=0, sticky='nw', pady=5)
         image_file = tk.PhotoImage(file = r"plik.png")
         image_file = image_file.subsample(1, 1)
-        self.button_input_file = ButtonInApp(self.frame_with_buttons, 0, 0, 1, txt='Chose input file', image=image_file)
+        self.button_input_file = ButtonInApp(self.frame_with_buttons, 0, 0, 1, txt='Chose input file', image=image_file, function_app = CallBacks.get_folder_path)
 
         
         
@@ -235,71 +275,100 @@ class MakeEnvelope(tk.Tk):
         self.label_spectra_type = LabelInApp(self.frame_chose_type_of_spectra, 0, 0, txt='Envelope for:')
         
         
-        
-        self.ir_label = LabelInApp(self.frame_chose_type_of_spectra, 0, 1, txt='IR')    
-        self.check_button_ir = CheckbuttonInApp(self.frame_chose_type_of_spectra)
-        self.check_button_ir.grid(column=2, row=0, sticky = 'w')
-        self.raman_label = LabelInApp(self.frame_chose_type_of_spectra, 0, 3, txt='Raman')
-        self.check_button_raman = CheckbuttonInApp(self.frame_chose_type_of_spectra)
-        self.check_button_raman.grid(column=4, row=0, sticky = 'w') 
+        global raman_check 
+        global ir_check 
+        raman_check = tk.BooleanVar()
+        ir_check = tk.BooleanVar() 
+        self.check_button_ir = CheckbuttonInApp(self.frame_chose_type_of_spectra, text='IR',
+                                                variable=raman_check, onvalue = True, offvalue = False)
+        self.check_button_ir.grid(column=1, row=0, sticky = 'w')
+        self.check_button_raman = CheckbuttonInApp(self.frame_chose_type_of_spectra, text='Raman',
+                                                   variable=ir_check, onvalue = True, offvalue = False)
+        self.check_button_raman.grid(column=2, row=0, sticky = 'w') 
 
         
-        self.frame_with_bond_type = FrameInApp(self.frame_with_options, self.background_color, highlightthickness=2)
-        self.frame_with_bond_type.grid(column=3, row=0, stick='w')
+        self.frame_with_bond_type = FrameInApp(self.frame_with_options, self.background_color,
+                                                highlightthickness=2)
+        self.frame_with_bond_type.grid(column=3, row=0, sticky='w')
         self.label_band_type = LabelInApp(self.frame_with_bond_type, 0,0, txt='Band type:')
         self.frame_band_type = FrameInApp(self.frame_with_bond_type, self.background_color)
         self.frame_band_type.grid(column=1, row=0, sticky = 'w')
-        self.radio_button_gauss = RadioButtonInApp(self.frame_band_type, text='Gauss')
-        self.radio_button_gauss.grid(column=0, row=0, sticky = 'w')
-        self.radio_button_lorentz = RadioButtonInApp(self.frame_band_type, text='Lorentz')
-        self.radio_button_lorentz.grid(column=1, row=0, sticky = 'w')
-        self.radio_button_voigt = RadioButtonInApp(self.frame_band_type, text='Voigt')
-        self.radio_button_voigt.grid(column=2, row=0, sticky = 'w')
         
-        self.frame_proportional_to_intensity = FrameInApp(self.frame_with_options, self.background_color, highlightthickness=2)
-        self.frame_proportional_to_intensity.grid(column=4, row=0, stick='w')
-        self.label_proportional_to_intensity = LabelInApp(self.frame_proportional_to_intensity, 0, 0, txt='Proportional to intensity:')
-        self.check_button_proportional_to_intensity = CheckbuttonInApp(self.frame_proportional_to_intensity)
-        self.check_button_proportional_to_intensity.grid(column=1, row=0, stick='w')
+        global type_bound 
+        type_bound = tk.StringVar() 
+        self.radio_button_gauss = RadioButtonInApp(self.frame_band_type, text='Gauss', 
+                                                   variable=type_bound, value='Gauss', state='normal')
+        self.radio_button_gauss.grid(column=0, row=0, sticky = 'w')
+
+        self.radio_button_lorentz = RadioButtonInApp(self.frame_band_type, text='Lorentz', 
+                                                     variable=type_bound, value='Lorentz', state='normal')
+        self.radio_button_lorentz.grid(column=1, row=0, sticky = 'w')
+
+        self.radio_button_voigt = RadioButtonInApp(self.frame_band_type, text='Voigt', 
+                                                   variable=type_bound, value='Voigt', state='normal')
+        self.radio_button_voigt.grid(column=2, row=0, sticky = 'w')
+
+        
+        global proportional_check 
+        proportional_check = tk.BooleanVar()
+        
+        self.frame_proportional_to_intensity = FrameInApp(self.frame_with_options, self.background_color, 
+                                                          highlightthickness=2)
+        self.frame_proportional_to_intensity.grid(column=4, row=0, sticky='w')
+
+        self.check_button_proportional_to_intensity = CheckbuttonInApp(self.frame_proportional_to_intensity, 
+                                                                        text='Proportional to intensity:',
+                                                                        variable = proportional_check,
+                                                                        onvalue = True, offvalue = False)
+        self.check_button_proportional_to_intensity.grid(column=0, row=0, sticky='w')
                 
         self.frame_with_parameters_for_band = FrameInApp(self.frame, self.background_color)
-        self.frame_with_parameters_for_band.grid(column=0, row=3, stick='nw')
-        self.label_standard_deviation = LabelInApp(self.frame_with_parameters_for_band, 0, 0, txt='Standard deviation:')
+        self.frame_with_parameters_for_band.grid(column=0, row=3, sticky='nw')
+        self.label_standard_deviation = LabelInApp(self.frame_with_parameters_for_band, 0, 0,
+                                                   txt='Standard deviation:')
         self.entry_standard_deviation = EntryInApp(self.frame_with_parameters_for_band)
         self.entry_standard_deviation.grid(column=1, row=0, sticky = 'w')
         self.label_scale_param = LabelInApp(self.frame_with_parameters_for_band, 0, 2, txt='Scale param:')
         self.entry_scale_param = EntryInApp(self.frame_with_parameters_for_band)
         self.entry_scale_param.grid(column=3, row=0, sticky = 'w')
         
-        self.label_number_of_points = LabelInApp(self.frame_with_parameters_for_band, 1, 0, txt='Number of points in envelope:')
+        self.label_number_of_points = LabelInApp(self.frame_with_parameters_for_band, 1, 0, 
+                                                 txt='Number of points in envelope:')
         self.entry_number_of_points = EntryInApp(self.frame_with_parameters_for_band)
         self.entry_number_of_points.grid(column=1, row=1, sticky = 'w')
 
         self.frame_precess_button = FrameInApp(self.frame, self.background_color)
-        self.frame_precess_button.grid(column=0, row=4, stick='w')
+        self.frame_precess_button.grid(column=0, row=4, sticky='w')
         image_process = tk.PhotoImage(file = r"proces.png")
         image_process = image_process.subsample(1, 1)
-        self.button_start_process = ButtonInApp(self.frame_precess_button, 0, 0, 1, txt='Calculate envelope', image=image_process)
+        self.button_start_process = ButtonInApp(self.frame_precess_button, 0, 0, 1, 
+                                                txt='Calculate envelope', image=image_process, 
+                                                function_app = CallBacks.make_enevelopes)
         photo = tk.PhotoImage(file = r"rysunek.png")
         photoimage = photo.subsample(1, 1)
-        self.button_input_file = ButtonInApp(self.frame_precess_button, 0, 1, 1, txt='Save files',  image=photoimage)
+        self.button_input_file = ButtonInApp(self.frame_precess_button, 0, 1, 1, txt='Save files',  
+                                             image=photoimage)
         #txt='Save files',
         self.progres_label = LabelInApp(self.frame, 5, 0, txt='Progres:')
-        self.progress_bar = PrograsBarrInApp(self.frame, orient='horizontal', length=400, mode='determinate')
-        self.progress_bar.grid(row = 6, column = 0, pady=20, stick='w', padx=20)
+        
+        global progress_bar
+        progress_bar = PrograsBarrInApp(self.frame, orient='horizontal', length=400, 
+                                             mode='determinate')
+        progress_bar.grid(row = 6, column = 0, pady=20, sticky='w', padx=20)
         
         self.frame_with_figs = FrameInApp(self.frame, self.background_color)
         self.frame_with_figs.grid(row=7, column=0, sticky='nw')
         
         self.frame_raman_fig = FrameInApp(self.frame_with_figs, self.background_color)
-        self.frame_raman_fig.grid(column=0, row=7, columnspan=2)
+        self.frame_raman_fig.grid(column=0, row=0, columnspan=1)
         self.label_raman_fig = LabelInApp(self.frame_raman_fig, 0, 0, txt='Raman')
         
         self.frame_ir_fig = FrameInApp(self.frame_with_figs, self.background_color)
-        self.frame_ir_fig.grid(column=2, row=7, columnspan=2)
+        self.frame_ir_fig.grid(column=1, row=0, columnspan=1)
         self.label_ir_fig = LabelInApp(self.frame_ir_fig, 0, 0, txt='IR') 
         
-        fig, ax = plt.subplots(figsize=(4.5, 3))
+        fig1, ax1 = plt.subplots(figsize=(4.5, 3))
+        fig2, ax2 = plt.subplots(figsize=(4.5, 3))
         
         
         #example data 
@@ -310,11 +379,15 @@ class MakeEnvelope(tk.Tk):
         
 
         df1 = df1[['Country','GDP_Per_Capita']].groupby('Country').sum()
-        df1.plot(kind='bar', legend=True, ax=ax)
-        ax.set_title('Country Vs. GDP Per Capita')
+        df1.plot(kind='bar', legend=True, ax=ax1)
+        df1.plot(kind='bar', legend=True, ax=ax2)
+        ax1.set_title('Country Vs. GDP Per Capita')
+        ax2.set_title('Country Vs. GDP Per Capita')
              
-        self.canvas_figure_ir = FigureCanvas(fig, self.frame_ir_fig, 1, 0) 
-        self.canvas_figure_raman = FigureCanvas(fig, self.frame_raman_fig, 1, 0) 
+        self.canvas_figure_ir = FigureCanvas(fig1, self.frame_ir_fig, 1, 0) 
+
+        
+        self.canvas_figure_raman = FigureCanvas(fig2, self.frame_raman_fig, 1, 0) 
             
 
 if __name__ == '__main__': 
