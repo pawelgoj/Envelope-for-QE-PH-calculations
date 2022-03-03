@@ -1,6 +1,6 @@
 import tkinter as tk
 import tkinter.font as font
-from tkinter import BaseWidget, Frame, Misc, ttk
+from tkinter import BaseWidget, Misc, ttk
 from tkinter import filedialog 
 from tkinter.messagebox import showinfo
 from menu_functions import MenuFunctions
@@ -20,25 +20,39 @@ class Navigation:
     def use_mouse_wheel(event):
         second_canvas.yview_scroll(int(-1*(event.delta/120)), "units")
 
+#switch off message. 
 class NavigationToolbar(NavigationToolbar2Tk):
-    def set_message(self, s):
-        pass       
-        
-class WidgetInApp(ABC, BaseWidget):
-    def add_mouse_wheel_interaction(self):
+    def set_message(self):
+        pass  
+    
+class FigureCanvas(FigureCanvasTkAgg):
+    def __init__(self, fig, master, row, column):
+        super().__init__(fig, master=master)
+        self.draw()
+        self.toolbar_ir = NavigationToolbar(self, master, pack_toolbar=False)
+        self.toolbar_ir.update()
+        self.toolbar_ir.grid(column=column, row=(row+1), pady=20)
+        self = self.get_tk_widget()
         self.bind('<MouseWheel>', Navigation.use_mouse_wheel)
+        self.grid(column=column, row=row, padx=20)   
+          
         
-class CanvasForFig(FigureCanvasTkAgg):
+class WidgetInApp(ABC):
+    def add_mouse_wheel_interaction(self):
+        self.bind('<MouseWheel>', Navigation.use_mouse_wheel)                    
+        
+class PrograsBarrInApp(WidgetInApp, ttk.Progressbar):
     def __init__(self, *args, **kwargs):
-        super().__init__( *args, **kwargs)
-        
+        super().__init__(*args, **kwargs)
+        self.add_mouse_wheel_interaction()
+                
 class LabelInApp(tk.Label, WidgetInApp):
     """Label in aplication CFWDFL"""
 
     def __init__(self, root: Misc, row: int, column: int,\
         columspan: int = 1, txt: str = "text in label"):
-        font_1 = font.Font(size = 12)
-        paddings = {'padx': 8, 'pady': 8}
+        font_1 = font.Font(size = 11)
+        paddings = {'padx': 5, 'pady': 5}
         background_color = {'bg': '#1E1E1E'}
         super().__init__(root, background_color, text = txt, fg='white', font=font_1, anchor='nw')
         self.grid(paddings, sticky='w', row=row, column=column, columnspan=columspan)
@@ -50,14 +64,18 @@ class ButtonInApp(tk.Button, WidgetInApp):
 
     def __init__(self, root: Misc, row: int, column: int,\
         columspan: int = 1, sticky='w', txt: str = "text on button",\
-        function_app = None):
-
-        font_1 = font.Font(size = 12)
+        function_app = None, image = None):
+        self.image = image
+        font_1 = font.Font(size = 11)
         paddings = {'padx': 5, 'pady': 5}
         background_color_and_border = {'bg': '#403332', 'bd': 4}
 
-        super().__init__(root, background_color_and_border, text = txt,\
-            fg='white', font = font_1, command = function_app)
+        if image != None:
+            super().__init__(root, background_color_and_border, \
+                fg='white', font = font_1, text = txt, image = self.image, compound = 'left', command = function_app)
+        else:
+            super().__init__(root, background_color_and_border, text = txt,\
+                fg='white', font = font_1, command = function_app)
         self.grid(paddings, sticky=sticky, row=row, column=column, columnspan=columspan)
         self.add_mouse_wheel_interaction()
 
@@ -82,16 +100,16 @@ class LabelFrameInApp(tk.LabelFrame, WidgetInApp):
 
 class CheckbuttonInApp(tk.Checkbutton, WidgetInApp):
     def __init__(self, root: Misc, *args, **kwargs):
-        font_1 = font.Font(size = 14)
-        attributes = {'padx': 6, 'pady': 6, 'bg': '#1E1E1E', 'selectcolor': '#1E1E1E',\
+        font_1 = font.Font(size = 11)
+        attributes = {'padx': 5, 'pady': 5, 'bg': '#1E1E1E', 'selectcolor': '#1E1E1E',\
             'activebackground': '#1E1E1E', 'fg': 'white'}
         super().__init__(root, attributes, font = font_1,  *args, **kwargs)
         self.add_mouse_wheel_interaction()
         
 class RadioButtonInApp(tk.Radiobutton, WidgetInApp):
     def __init__(self, root: Misc, *args, **kwargs):
-        font_1 = font.Font(size = 12)
-        attributes = {'padx': 6, 'pady': 6, 'bg': '#1E1E1E', 'selectcolor': '#1E1E1E',\
+        font_1 = font.Font(size = 11)
+        attributes = {'padx': 5, 'pady': 5, 'bg': '#1E1E1E', 'selectcolor': '#1E1E1E',\
             'activebackground': '#1E1E1E', 'fg': 'white'}
         super().__init__(root, attributes, font = font_1,  *args, **kwargs)
         self.add_mouse_wheel_interaction()
@@ -111,8 +129,8 @@ class CanvaInApp(tk.Canvas, WidgetInApp):
         
 class MakeEnvelope(tk.Tk):
     
-    def __init__(self, background_color: str = '#1E1E1E', regular_font_size: int = 12, heading_font_size: int = 14, \
-        message_box_font_size: int = 12, paddings: dict = {'padx': 6, 'pady': 6}):
+    def __init__(self, background_color: str = '#1E1E1E', regular_font_size: int = 11, heading_font_size: int = 12, \
+        message_box_font_size: int = 12, paddings: dict = {'padx': 5, 'pady': 5}):
         
         self.background_color_value = background_color
         self.background_color = {'bg': background_color}
@@ -123,11 +141,12 @@ class MakeEnvelope(tk.Tk):
         self.appname = 'Envelope for QE PH calculations'
         
         #ico
+        self.iconphoto(False, tk.PhotoImage(file='fig_logo.png'))
         #self.iconphoto(False, tk.PhotoImage(file=(PATH_TO_IMAGES + 'image/icon.png')))
 
         self.resizable(width=True, height=True)
         self.windowingsystem = 'win32'
-        self.geometry("600x600")
+        self.geometry("1000x800")
         
         #fonts 
         self.regular_font_size = font.Font(size = regular_font_size)
@@ -148,13 +167,13 @@ class MakeEnvelope(tk.Tk):
         menubar.add_cascade(menu=menu_other_projects, label='Other projects')
         menubar.add_cascade(menu=menu_help, label='Help')
         
-        #TODO menu functions 
+        #menu functions 
         menu_other_projects.add_command(label='CDFFL',
             command=MenuFunctions.show_project_CDFFL)
             
         menu_help.add_command(label='Documentation', command=MenuFunctions.show_documentation)
         
-                #Main farame in GUI fills the application window completely
+        #Main farame in GUI fills the application window completely
         self.main_frame = tk.Frame(self)
         main_frame = self.main_frame
         main_frame.pack(side='left', anchor='nw', fill='both', expand=1)
@@ -195,29 +214,41 @@ class MakeEnvelope(tk.Tk):
         second_canvas.bind('<Configure>', lambda e: second_canvas.config(scrollregion = second_canvas.bbox("all")))
 
         self.frame = FrameInApp(second_canvas, self.background_color)
-        self.frame.grid(columnspan=2, rowspan=9, sticky = 'nw')
+        self.frame.grid(sticky = 'nw')
 
         #create window to display frame grid
         second_canvas.create_window((0,0), window=self.frame, anchor="nw", height=1000)
+        
+        self.frame_with_buttons = FrameInApp(self.frame, self.background_color)
+        self.frame_with_buttons.grid(column=0, row=0, stick='nw', pady=5)
+        image_file = tk.PhotoImage(file = r"plik.png")
+        image_file = image_file.subsample(1, 1)
+        self.button_input_file = ButtonInApp(self.frame_with_buttons, 0, 0, 1, txt='Chose input file', image=image_file)
 
-        self.button_input_file = ButtonInApp(self.frame, 0, 0, 1, txt='Chose input file')
-        self.button_input_file = ButtonInApp(self.frame, 0, 1, 1, txt='Save files')
         
-        self.label_spectra_type = LabelInApp(self.frame, 1, 0, txt='Envelope for:')
-        self.frame_chose_type_of_spectra = FrameInApp(self.frame, self.background_color)
         
-        self.frame_chose_type_of_spectra.grid(column=1, row=1, sticky = 'nw')
+        self.frame_with_options= FrameInApp(self.frame, self.background_color)
+        self.frame_with_options.grid(row=1, column=0, sticky='nw')
         
-        self.ir_label = LabelInApp(self.frame_chose_type_of_spectra, 0, 0, txt='IR')    
+        self.frame_chose_type_of_spectra = FrameInApp(self.frame_with_options, self.background_color, highlightthickness=2)
+        self.frame_chose_type_of_spectra.grid(column=0, row=0, sticky = 'nw')
+        self.label_spectra_type = LabelInApp(self.frame_chose_type_of_spectra, 0, 0, txt='Envelope for:')
+        
+        
+        
+        self.ir_label = LabelInApp(self.frame_chose_type_of_spectra, 0, 1, txt='IR')    
         self.check_button_ir = CheckbuttonInApp(self.frame_chose_type_of_spectra)
-        self.check_button_ir.grid(column=1, row=0, sticky = 'w')
-        self.raman_label = LabelInApp(self.frame_chose_type_of_spectra, 0, 2, txt='Raman')
+        self.check_button_ir.grid(column=2, row=0, sticky = 'w')
+        self.raman_label = LabelInApp(self.frame_chose_type_of_spectra, 0, 3, txt='Raman')
         self.check_button_raman = CheckbuttonInApp(self.frame_chose_type_of_spectra)
-        self.check_button_raman.grid(column=3, row=0, sticky = 'w') 
+        self.check_button_raman.grid(column=4, row=0, sticky = 'w') 
+
         
-        self.label_band_type = LabelInApp(self.frame, 1,1, txt='Band type:')
-        self.frame_band_type = FrameInApp(self.frame, self.background_color)
-        self.frame_band_type.grid(column=3, row=1, sticky = 'w')
+        self.frame_with_bond_type = FrameInApp(self.frame_with_options, self.background_color, highlightthickness=2)
+        self.frame_with_bond_type.grid(column=3, row=0, stick='w')
+        self.label_band_type = LabelInApp(self.frame_with_bond_type, 0,0, txt='Band type:')
+        self.frame_band_type = FrameInApp(self.frame_with_bond_type, self.background_color)
+        self.frame_band_type.grid(column=1, row=0, sticky = 'w')
         self.radio_button_gauss = RadioButtonInApp(self.frame_band_type, text='Gauss')
         self.radio_button_gauss.grid(column=0, row=0, sticky = 'w')
         self.radio_button_lorentz = RadioButtonInApp(self.frame_band_type, text='Lorentz')
@@ -225,29 +256,50 @@ class MakeEnvelope(tk.Tk):
         self.radio_button_voigt = RadioButtonInApp(self.frame_band_type, text='Voigt')
         self.radio_button_voigt.grid(column=2, row=0, sticky = 'w')
         
-        self.label_standard_deviation = LabelInApp(self.frame, 3, 0, txt='Standard deviation:')
-        self.entry_standard_deviation = EntryInApp(self.frame)
-        self.entry_standard_deviation.grid(column=1, row=3, sticky = 'w')
-        self.label_scale_param = LabelInApp(self.frame, 4, 0, txt='Scale param:')
-        self.entry_scale_param = EntryInApp(self.frame)
-        self.entry_scale_param.grid(column=1, row=4, sticky = 'w')
+        self.frame_proportional_to_intensity = FrameInApp(self.frame_with_options, self.background_color, highlightthickness=2)
+        self.frame_proportional_to_intensity.grid(column=4, row=0, stick='w')
+        self.label_proportional_to_intensity = LabelInApp(self.frame_proportional_to_intensity, 0, 0, txt='Proportional to intensity:')
+        self.check_button_proportional_to_intensity = CheckbuttonInApp(self.frame_proportional_to_intensity)
+        self.check_button_proportional_to_intensity.grid(column=1, row=0, stick='w')
+                
+        self.frame_with_parameters_for_band = FrameInApp(self.frame, self.background_color)
+        self.frame_with_parameters_for_band.grid(column=0, row=3, stick='nw')
+        self.label_standard_deviation = LabelInApp(self.frame_with_parameters_for_band, 0, 0, txt='Standard deviation:')
+        self.entry_standard_deviation = EntryInApp(self.frame_with_parameters_for_band)
+        self.entry_standard_deviation.grid(column=1, row=0, sticky = 'w')
+        self.label_scale_param = LabelInApp(self.frame_with_parameters_for_band, 0, 2, txt='Scale param:')
+        self.entry_scale_param = EntryInApp(self.frame_with_parameters_for_band)
+        self.entry_scale_param.grid(column=3, row=0, sticky = 'w')
         
-        self.label_number_of_points = LabelInApp(self.frame, 5, 0, txt='Number of points in envelope:')
-        self.entry_number_of_points = EntryInApp(self.frame)
-        self.entry_number_of_points.grid(column=1, row=5, sticky = 'w')
+        self.label_number_of_points = LabelInApp(self.frame_with_parameters_for_band, 1, 0, txt='Number of points in envelope:')
+        self.entry_number_of_points = EntryInApp(self.frame_with_parameters_for_band)
+        self.entry_number_of_points.grid(column=1, row=1, sticky = 'w')
 
-        progress_bar = ttk.Progressbar(self.frame, orient='horizontal', length=400, mode='determinate')
-        progress_bar.grid(row = 6, column = 0, columnspan=2, rowspan=1, pady=20)
+        self.frame_precess_button = FrameInApp(self.frame, self.background_color)
+        self.frame_precess_button.grid(column=0, row=4, stick='w')
+        image_process = tk.PhotoImage(file = r"proces.png")
+        image_process = image_process.subsample(1, 1)
+        self.button_start_process = ButtonInApp(self.frame_precess_button, 0, 0, 1, txt='Calculate envelope', image=image_process)
+        photo = tk.PhotoImage(file = r"rysunek.png")
+        photoimage = photo.subsample(1, 1)
+        self.button_input_file = ButtonInApp(self.frame_precess_button, 0, 1, 1, txt='Save files',  image=photoimage)
+        #txt='Save files',
+        self.progres_label = LabelInApp(self.frame, 5, 0, txt='Progres:')
+        self.progress_bar = PrograsBarrInApp(self.frame, orient='horizontal', length=400, mode='determinate')
+        self.progress_bar.grid(row = 6, column = 0, pady=20, stick='w', padx=20)
         
-        self.frame_raman_fig = FrameInApp(self.frame, self.background_color)
-        self.frame_raman_fig.grid(column=0, row=7)
+        self.frame_with_figs = FrameInApp(self.frame, self.background_color)
+        self.frame_with_figs.grid(row=7, column=0, sticky='nw')
+        
+        self.frame_raman_fig = FrameInApp(self.frame_with_figs, self.background_color)
+        self.frame_raman_fig.grid(column=0, row=7, columnspan=2)
         self.label_raman_fig = LabelInApp(self.frame_raman_fig, 0, 0, txt='Raman')
         
-        self.frame_ir_fig = FrameInApp(self.frame, self.background_color)
-        self.frame_ir_fig.grid(column=1, row=7)
+        self.frame_ir_fig = FrameInApp(self.frame_with_figs, self.background_color)
+        self.frame_ir_fig.grid(column=2, row=7, columnspan=2)
         self.label_ir_fig = LabelInApp(self.frame_ir_fig, 0, 0, txt='IR') 
         
-        fig, ax = plt.subplots(figsize=(5, 3))
+        fig, ax = plt.subplots(figsize=(4.5, 3))
         
         
         #example data 
@@ -261,20 +313,9 @@ class MakeEnvelope(tk.Tk):
         df1.plot(kind='bar', legend=True, ax=ax)
         ax.set_title('Country Vs. GDP Per Capita')
              
-        self.canvas_figure_ir = FigureCanvasTkAgg(fig, master=self.frame_ir_fig) 
-        self.canvas_figure_ir.draw()
-        self.toolbar_ir = NavigationToolbar(self.canvas_figure_ir, self.frame_ir_fig, pack_toolbar=False)
-        self.toolbar_ir.update()
-        self.toolbar_ir.grid(column=0, row=2, pady=20)
-        self.canvas_figure_ir.get_tk_widget().grid(column=0, row=1, padx=20)
-        
-        self.canvas_figure_raman = FigureCanvasTkAgg(fig, master=self.frame_raman_fig) 
-        self.canvas_figure_raman.draw()
-        self.toolbar_raman = NavigationToolbar(self.canvas_figure_raman, self.frame_raman_fig, pack_toolbar=False)
-        self.toolbar_raman.update()
-        self.toolbar_raman.grid(column=0, row=2, pady=20)
-        self.canvas_figure_raman.get_tk_widget().grid(column=0, row=1, padx=20)
-
+        self.canvas_figure_ir = FigureCanvas(fig, self.frame_ir_fig, 1, 0) 
+        self.canvas_figure_raman = FigureCanvas(fig, self.frame_raman_fig, 1, 0) 
+            
 
 if __name__ == '__main__': 
     global application_gui
