@@ -3,11 +3,12 @@ import tkinter.font as font
 from tkinter import BaseWidget, Misc, ttk
 from tkinter import filedialog 
 from tkinter.messagebox import showinfo
-from menu_functions import MenuFunctions
+
 from pandas import DataFrame
+
 import re
 
-from do_envelope import *
+from abc import ABC
 
 from matplotlib.backends.backend_tkagg import (
     FigureCanvasTkAgg, NavigationToolbar2Tk)
@@ -15,7 +16,8 @@ from matplotlib.backends.backend_tkagg import (
 from matplotlib.backend_bases import key_press_handler
 import matplotlib.pyplot as plt
 
-from abc import ABC
+from menu_functions import MenuFunctions
+from do_envelope import *
 
 
 class Navigation:
@@ -56,7 +58,16 @@ class CallBacks:
                                  application_gui.entry_number_of_points, file, ir_raman)
         du_envelope.make_envelopes()
         #TODO schow figs of envelopes
-
+    
+    #TODO Implement this method 
+    @staticmethod
+    def save_files():
+        file_name = filedialog.asksaveasfilename(filetypes=[("text file","*.csv")], defaultextension = "*.csv")
+        
+        if file_name:
+            pass
+            
+            
 #switch off message. 
 class NavigationToolbar(NavigationToolbar2Tk):
     def set_message(self, s):
@@ -346,8 +357,8 @@ class MakeEnvelope(tk.Tk):
                                                 function_app = CallBacks.make_enevelopes)
         photo = tk.PhotoImage(file = r"rysunek.png")
         photoimage = photo.subsample(1, 1)
-        self.button_input_file = ButtonInApp(self.frame_precess_button, 0, 1, 1, txt='Save files',  
-                                             image=photoimage)
+        self.button_save_file = ButtonInApp(self.frame_precess_button, 0, 1, 1, txt='Save files',  
+                                            image=photoimage, function_app =CallBacks.save_files)
         #txt='Save files',
         self.progres_label = LabelInApp(self.frame, 5, 0, txt='Progres:')
         

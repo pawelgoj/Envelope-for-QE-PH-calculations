@@ -9,6 +9,8 @@ import math as math
 import scipy.special as special
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
+from pandas import DataFrame
 
 #Plots the strand positions calculated from QE on the graph
 def int_bonds(x, y, intensity):
@@ -48,7 +50,8 @@ class Dane:
        except: 
            print("There is no such file!!!")
         
-       Dane.read_data(file, self.start_data_read_in_line)
+       list_of_mods = Dane.read_data(file, self.start_data_read_in_line)
+       return list_of_mods
            
     @staticmethod     
     def read_data(file, start_data_read_in_line: str) -> list:
@@ -259,27 +262,15 @@ class Envelope:
 
 class Results: 
     """Objects are the results to save or draw"""
-    def __init__(self, wyniki: np.array, name: str):
+    def __init__(self, wyniki: DataFrame, path):
+        self.path = path
         self.wyniki = wyniki 
-        self.name = name
-        
-    def save(self, label: str):
-        """save results 
 
-        Args:
-            label (str): Name of envelope eg. Raman or IR
-        """
-        file_name = "{}_{}.txt"
-        results = open(file_name.format(label, self.name), "w")
-        results.write("cm-1 Intensity \n")
-        results.write("\n")
-        colums = self.wyniki.shape 
         
-        for i in range(1, colums[1]): 
-            results.write(str(self.wyniki[0, i]) + " " + str(self.wyniki[1, i]) + "\n")
-        results.close()
+    def save_data(self):
+
+        (self.wyniki).to_csv(self.path, sep=',')
         
-        return
     
     def print_fig(self, label: str, intensity: list):
         """Print fig 
@@ -296,7 +287,8 @@ class Results:
         plt.xlabel("cm^-1")
         plt.ylabel("Intensity")
         
-        plt.title(Fig_title.format(label, self.name))
+        name ='Dupa'
+        plt.title(Fig_title.format(label, name))
         plt.plot(x, y)
         
         y = int_bonds(x, y, intensity)
