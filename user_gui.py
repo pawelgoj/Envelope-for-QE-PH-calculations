@@ -33,7 +33,7 @@ class CallBacks:
         
         file = filedialog.askopenfile(mode='r')
         check_file_type = file.name
-
+        file = check_file_type
         global file_type 
         if re.search(".txt$", check_file_type):
             file_type = 'txt'
@@ -70,15 +70,19 @@ class CallBacks:
                                  self_proportional_check, self_entry_number_of_points, file, ir_raman)
         do_envelope_object.make_envelopes(progress_bar=progress_bar)
         
-        #TODO schow figs of envelopes
-    
-    #TODO Implement this method 
+        
+        fig_ir, fig_raman = do_envelope_object.return_figs()
+        
+        application_gui.canvas_figure_ir.config(fig=fig_ir)
+        application_gui.canvas_figure_raman.config(fig=fig_raman)
+        application_gui.mainloop() 
+        
     @staticmethod
     def save_files():
         file_name = filedialog.asksaveasfilename(filetypes=[("text file","*.csv")], defaultextension = "*.csv")
         print(file_name)
         if file_name:
-            do_envelope.save_envelopes(file_name)
+            do_envelope_object.save_envelopes(file_name)
         
     #TODO implemnet this class 
     @staticmethod
@@ -93,6 +97,11 @@ class NavigationToolbar(NavigationToolbar2Tk):
     
 class FigureCanvas:
     def __init__(self, fig, master, row: int, column: int):
+        
+        self.master = master
+        self.row = row 
+        self.column = column
+        
         self.figure = FigureCanvasTkAgg(fig, master=master)
         self.figure.draw()
         
@@ -103,6 +112,20 @@ class FigureCanvas:
         self.canvas_fig = self.figure.get_tk_widget()
         self.canvas_fig.bind('<MouseWheel>', Navigation.use_mouse_wheel)
         self.canvas_fig.grid(column=column, row=row, padx=20)
+        
+    def config(self, fig=None):
+        
+        self.canvas_fig.destroy()
+        self.figure = FigureCanvasTkAgg(fig, master= self.master)
+        self.figure.draw()
+        
+        self.toolbar = NavigationToolbar(self.figure, self.master, pack_toolbar=False)
+        self.toolbar.update()
+        self.toolbar.grid(column=0, row=(self.row+1), pady=20)
+        
+        self.canvas_fig = self.figure.get_tk_widget()
+        self.canvas_fig.bind('<MouseWheel>', Navigation.use_mouse_wheel)
+        self.canvas_fig.grid(column=self.column, row=self.row, padx=20)        
            
          
         
@@ -308,10 +331,10 @@ class MakeEnvelope(tk.Tk):
         raman_check = tk.BooleanVar()
         ir_check = tk.BooleanVar() 
         self.check_button_ir = CheckbuttonInApp(self.frame_chose_type_of_spectra, text='IR',
-                                                variable=raman_check, onvalue = True, offvalue = False)
+                                                variable=ir_check, onvalue = True, offvalue = False)
         self.check_button_ir.grid(column=1, row=0, sticky = 'w')
         self.check_button_raman = CheckbuttonInApp(self.frame_chose_type_of_spectra, text='Raman',
-                                                   variable=ir_check, onvalue = True, offvalue = False)
+                                                   variable=raman_check, onvalue = True, offvalue = False)
         self.check_button_raman.grid(column=2, row=0, sticky = 'w') 
 
         
@@ -376,10 +399,8 @@ class MakeEnvelope(tk.Tk):
         photoimage = photo.subsample(1, 1)
         self.button_export_data = ButtonInApp(self.frame_precess_button, 0, 1, 1, txt='Export data',  
                                             image=photoimage, function_app =CallBacks.save_files)
-        self.button_export_figs = ButtonInApp(self.frame_precess_button, 0, 2, 1, txt='Export figs',  
-                                            image=photoimage, function_app =CallBacks.export_figs)
         
-        self.progres_label = LabelInApp(self.frame, 5, 0, txt='Progres:')
+        self.progres_label = LabelInApp(self.frame, 5, 0, txt='Progress:')
         
         global progress_bar
         progress_bar = PrograsBarrInApp(self.frame, orient='horizontal', length=400, 
@@ -397,26 +418,26 @@ class MakeEnvelope(tk.Tk):
         self.frame_ir_fig.grid(column=1, row=0, columnspan=1)
         self.label_ir_fig = LabelInApp(self.frame_ir_fig, 0, 0, txt='IR') 
         
-        fig1, ax1 = plt.subplots(figsize=(4.5, 3))
-        fig2, ax2 = plt.subplots(figsize=(4.5, 3))
+        
+        fig1, ax1 = plt.subplots(figsize=(4.5, 3.5))
+        fig2, ax2 = plt.subplots(figsize=(4.5, 3.5))
         
         
         #example data 
+        """
         data1 = {'Country': ['US','CA','GER','UK','FR'],
         'GDP_Per_Capita': [45000,42000,52000,49000,47000]}
-        df1 = DataFrame(data1,columns=['Country','GDP_Per_Capita'])
-
-        
+        df1 = DataFrame(data1,columns=['Country','GDP_Per_Capita'])  
 
         df1 = df1[['Country','GDP_Per_Capita']].groupby('Country').sum()
         df1.plot(kind='bar', legend=True, ax=ax1)
         df1.plot(kind='bar', legend=True, ax=ax2)
         ax1.set_title('Country Vs. GDP Per Capita')
         ax2.set_title('Country Vs. GDP Per Capita')
-             
+        """
+
         self.canvas_figure_ir = FigureCanvas(fig1, self.frame_ir_fig, 1, 0) 
 
-        
         self.canvas_figure_raman = FigureCanvas(fig2, self.frame_raman_fig, 1, 0) 
             
 

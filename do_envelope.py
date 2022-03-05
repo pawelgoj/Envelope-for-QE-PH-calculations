@@ -6,14 +6,13 @@ Created on Sun Mar 14 19:54:36 2021
 """
 
 from classes import *
-from tkinter.ttk import Progressbar
 
 class DoEnvelope:
     def __init__(self, application_gui=None):
         self.application_gui = application_gui
     
     def set_param(self, format_of_file: str, type_of_band: str, width_band_g: float, width_band_l: float, proportional_to_height: bool,
-                 nr_points: int, file: str, ir_raman: str, raman_envelpe = None, ir_envelpe = None):
+                 nr_points: int, file, ir_raman: str, raman_envelpe = None, ir_envelpe = None):
         self.name_obw_1 = "Raman"
         self.name_obw_2 = "IR"
 
@@ -94,7 +93,7 @@ class DoEnvelope:
             
         if self.ir_raman != self.name_obw_2:
             self.raman_envelpe = Envelope(self.raman, self.nr_points, minimum, maximum, max_raman_intensity).do_envelope(self.type_of_band, Q1, Q2, proportional_to_height = self.proportional_to_height)
-            self.raman_envelpe = self.raman_envelpe.transpose()
+            self.raman_envelpe_dt = self.raman_envelpe.transpose()
             print("raman envelope done")
             
         if progress_bar:
@@ -103,7 +102,7 @@ class DoEnvelope:
             
         if self.ir_raman != self.name_obw_1:
             self.ir_envelpe = Envelope(self.ir, self.nr_points, minimum, maximum, max_ir_intensity).do_envelope(self.type_of_band, Q1, Q2, proportional_to_height = self.proportional_to_height)
-            self.ir_envelpe = self.ir_envelpe.transpose()
+            self.ir_envelpe_dt = self.ir_envelpe.transpose()
             print("IR envelope done")
             
         if progress_bar:
@@ -117,24 +116,36 @@ class DoEnvelope:
             Results(ir_envelpe, "IR").print_fig(label, ir)
         '''
     
-    #TODO Implement this method    
-    def save_envelopes(self, path):
         #code procesing np.array to dataframe 
-        if  not (self.raman_envelpe is None) and not(self.ir_envelpe is None):
-            array_to_dt = np.hstack((self.ir_envelpe, self.raman_envelpe))
+        if self.ir_raman == self.name_obw_1:
+            df = pd.DataFrame(self.raman_envelpe_dt, columns=['cm-1', 'Raman'])
+            
+        elif self.ir_raman == self.name_obw_2:
+            df = pd.DataFrame(self.ir_envelpe_dt, columns=['cm-1', 'IR']) 
+        else:
+            array_to_dt = np.hstack((self.ir_envelpe_dt, self.raman_envelpe_dt))
             df = pd.DataFrame(array_to_dt, columns=['cm-1', 'IR', 'cm-1', 'Raman'])
-            
-        elif self.raman_envelpe:
-            df = pd.DataFrame(self.raman_envelpe, columns=['cm-1', 'Raman'])
-            
-        elif self.ir_envelpe:
-            df = pd.DataFrame(self.ir_envelpe, columns=['cm-1', 'IR'])            
+                       
                         
-        results = Results(df, path)
-        results.save_data()
-    
-    #TODO Implement this method         
-    def save_figs(self):
-        pass
+        self.results = Results(df, wyniki_ir = self.ir_envelpe, wyniki_raman = self.raman_envelpe)
 
-        print("result saved") 
+    
+    def save_envelopes(self, path):
+
+        self.results.save_data(path)
+        
+        
+    #TODO Implement this method
+    def return_figs(self):
+        if self.ir_raman == self.name_obw_1:
+            fig_ir, fig_raman = self.results.print_fig(intensity_raman = self.raman)
+            
+        elif self.ir_raman == self.name_obw_2:
+            fig_ir, fig_raman = self.results.print_fig(intensity_ir = self.ir)
+            
+        else:
+            fig_ir, fig_raman = self.results.print_fig(intensity_ir = self.ir, intensity_raman = self.raman)
+        
+        return fig_ir, fig_raman
+        
+        

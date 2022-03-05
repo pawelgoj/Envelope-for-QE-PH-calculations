@@ -11,6 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 from pandas import DataFrame
+from numpy import array 
 
 #Plots the strand positions calculated from QE on the graph
 def int_bonds(x, y, intensity):
@@ -40,14 +41,17 @@ class Dane:
        self.start_data_read_in_line = start_data_read_in_line
        
     def load_file(self):
-       """Loads a file and returns a list of mods 
+        """Loads a file and returns a list of mods 
 
-       Returns:
+        Returns:
            list: List of mods 
-       """
-
-       list_of_mods = Dane.read_data(self.name_of_file, self.start_data_read_in_line)
-       return list_of_mods
+        """
+        with open(self.name_of_file, 'r') as file:
+           
+            list_of_mods = Dane.read_data(file, self.start_data_read_in_line)
+            
+            
+        return list_of_mods
            
     @staticmethod     
     def read_data(file, start_data_read_in_line: str) -> list:
@@ -258,67 +262,63 @@ class Envelope:
 
 class Results: 
     """Objects are the results to save or draw"""
-    def __init__(self, wyniki: DataFrame, path):
-        self.path = path
+    def __init__(self, wyniki: DataFrame, wyniki_ir = None, wyniki_raman = None):
+        
         self.wyniki = wyniki 
-
+        self.wyniki_ir = wyniki_ir
+        self.wyniki_raman = wyniki_raman
         
-    def save_data(self):
+    def save_data(self, path: str):
 
-        (self.wyniki).to_csv(self.path, sep=',')
+        (self.wyniki).to_csv(path, sep=',')
         
     
-    def print_fig(self, label: str, intensity: list):
-        """Print fig 
+    def print_fig(self, intensity_ir: list = [], intensity_raman: list = []):
+        """Return figs for show 
 
         Args:
-            label (str): Name of envelope eg. Raman or IR
-            intensity (list): List of mods 
+            intensity_ir (list): List of mods ir 
+            intensity_rama (list): List of mods raman
         """
-        x = np.array(self.wyniki[0, 0:])
-        y = np.array(self.wyniki[1, 0:])
+        Fig_title_ir = "IR"
+        Fig_title_raman = "Raman"
         
-        Fig_title = "{}_{}"
+        x_label = r'$cm^{-1}$'
+        y_label = r'Intensity'
         
-        plt.xlabel("cm^-1")
-        plt.ylabel("Intensity")
+        fig_ir, ax_ir = plt.subplots(figsize=(4.5, 3.5))
         
-        name ='Dupa'
-        plt.title(Fig_title.format(label, name))
-        plt.plot(x, y)
+        if intensity_ir != []:
+            
+            x = np.array(self.wyniki_ir[0, 0:])
+            y = np.array(self.wyniki_ir[1, 0:])
         
-        y = int_bonds(x, y, intensity)
+            ax_ir.set_ylabel(y_label)
+            ax_ir.set_xlabel(x_label)
+            ax_ir.set_title(Fig_title_ir)
+            ax_ir.plot(x, y)
         
-        plt.stem(x, y, markerfmt='none', linefmt='red', basefmt='none')
-        plt.show()
+            y = int_bonds(x, y, intensity_ir)   
+            ax_ir.stem(x, y, markerfmt='none', linefmt='red', basefmt='none')
         
-        return
-    
-    def save_fig(self, label: str, intensity: list):
-        """save fig 
+            #adjust space below figure 
+            fig_ir.subplots_adjust(bottom=0.15, left=0.15)
+            
+        fig_raman, ax_raman = plt.subplots(figsize=(4.5, 3.5))   
+                 
+        if intensity_raman != []:
 
-        Args:
-            label (str): Name of envelope eg. Raman or IR
-            intensity (list): List of mods 
-        """
-        x = np.array(self.wyniki[0, 1:]) 
-        y = np.array(self.wyniki[1, 1:])
+            x = np.array(self.wyniki_raman[0, 0:])
+            y = np.array(self.wyniki_raman[1, 0:])
+            
+            ax_raman.set_ylabel(y_label)
+            ax_raman.set_xlabel(x_label)
+            ax_raman.set_title(Fig_title_raman)
+            ax_raman.plot(x, y)
+            
+            y = int_bonds(x, y, intensity_raman)   
+            ax_raman.stem(x, y, markerfmt='none', linefmt='red', basefmt='none')
+            fig_raman.subplots_adjust(bottom=0.15, left=0.15)
         
-        Fig_title = "{}_{}"
-        plt.xlabel("cm^-1")
-        plt.ylabel("Intensity")
-        plt.title(Fig_title.format(label, self.name))
-        
-        plt.plot(x, y)
-        
-        y = int_bonds(x, y, intensity)
-        
-        plt.stem(x, y, markerfmt='none', linefmt='red', basefmt='none') 
-        
-        name = "{}_{}.png"
-        name1 = name.format(label, self.name)
-        
-        plt.savefig(name1, dpi=600)
-        plt.close()
-        
-        return
+
+        return fig_ir, fig_raman
