@@ -43,29 +43,47 @@ class CallBacks:
     @staticmethod
     def make_enevelopes():
         #Envelope for Raman or IR or Both
-        if raman_check == True and ir_check == True:
+        self_raman_check = raman_check.get()
+        self_ir_check = ir_check.get()
+        progress_bar['value'] = 0
+        
+        if self_raman_check == True and self_ir_check == True:
             ir_raman = 'Both'
-        elif raman_check == True:
+        elif self_raman_check == True:
             ir_raman = 'Raman'
-        elif ir_check == True:
+        elif self_ir_check == True:
             ir_raman = 'IR'
         else:
             raise Exception('You do not chose Raman or/and IR!')
             
+        self_proportional_check = proportional_check.get()
+        self_type_bound = str(type_bound.get())
+        self_entry_standard_deviation = float(application_gui.entry_standard_deviation.get())
+        self_entry_scale_param = float(application_gui.entry_scale_param.get())
+        self_entry_number_of_points = int(application_gui.entry_number_of_points.get())
         
-        du_envelope = DuEnvelope(file_type, type_bound, application_gui.entry_standard_deviation, 
-                                 application_gui.entry_scale_param, proportional_check, 
-                                 application_gui.entry_number_of_points, file, ir_raman)
-        du_envelope.make_envelopes()
+        
+        progress_bar['value'] = 10
+        application_gui.update_idletasks()
+        
+        do_envelope_object.set_param(file_type, self_type_bound, self_entry_standard_deviation, self_entry_scale_param, 
+                                 self_proportional_check, self_entry_number_of_points, file, ir_raman)
+        do_envelope_object.make_envelopes(progress_bar=progress_bar)
+        
         #TODO schow figs of envelopes
     
     #TODO Implement this method 
     @staticmethod
     def save_files():
         file_name = filedialog.asksaveasfilename(filetypes=[("text file","*.csv")], defaultextension = "*.csv")
-        
+        print(file_name)
         if file_name:
-            pass
+            do_envelope.save_envelopes(file_name)
+        
+    #TODO implemnet this class 
+    @staticmethod
+    def export_figs():
+        pass
             
             
 #switch off message. 
@@ -276,8 +294,7 @@ class MakeEnvelope(tk.Tk):
         image_file = image_file.subsample(1, 1)
         self.button_input_file = ButtonInApp(self.frame_with_buttons, 0, 0, 1, txt='Chose input file', image=image_file, function_app = CallBacks.get_folder_path)
 
-        
-        
+               
         self.frame_with_options= FrameInApp(self.frame, self.background_color)
         self.frame_with_options.grid(row=1, column=0, sticky='nw')
         
@@ -318,7 +335,7 @@ class MakeEnvelope(tk.Tk):
         self.radio_button_voigt = RadioButtonInApp(self.frame_band_type, text='Voigt', 
                                                    variable=type_bound, value='Voigt', state='normal')
         self.radio_button_voigt.grid(column=2, row=0, sticky = 'w')
-
+        self.radio_button_gauss.select()
         
         global proportional_check 
         proportional_check = tk.BooleanVar()
@@ -357,9 +374,11 @@ class MakeEnvelope(tk.Tk):
                                                 function_app = CallBacks.make_enevelopes)
         photo = tk.PhotoImage(file = r"rysunek.png")
         photoimage = photo.subsample(1, 1)
-        self.button_save_file = ButtonInApp(self.frame_precess_button, 0, 1, 1, txt='Save files',  
+        self.button_export_data = ButtonInApp(self.frame_precess_button, 0, 1, 1, txt='Export data',  
                                             image=photoimage, function_app =CallBacks.save_files)
-        #txt='Save files',
+        self.button_export_figs = ButtonInApp(self.frame_precess_button, 0, 2, 1, txt='Export figs',  
+                                            image=photoimage, function_app =CallBacks.export_figs)
+        
         self.progres_label = LabelInApp(self.frame, 5, 0, txt='Progres:')
         
         global progress_bar
@@ -404,7 +423,7 @@ class MakeEnvelope(tk.Tk):
 if __name__ == '__main__': 
     global application_gui
     application_gui = MakeEnvelope()
-
+    do_envelope_object = DoEnvelope(application_gui)
 else: 
     print(__name__)
     raise Exception('The __name__ == __main__ !!!!!')

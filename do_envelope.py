@@ -6,9 +6,13 @@ Created on Sun Mar 14 19:54:36 2021
 """
 
 from classes import *
+from tkinter.ttk import Progressbar
 
-class DuEnvelope:
-    def __init__(self, format_of_file: str, type_of_band: str, width_band_g: float, width_band_l: float, proportional_to_height: bool,
+class DoEnvelope:
+    def __init__(self, application_gui=None):
+        self.application_gui = application_gui
+    
+    def set_param(self, format_of_file: str, type_of_band: str, width_band_g: float, width_band_l: float, proportional_to_height: bool,
                  nr_points: int, file: str, ir_raman: str, raman_envelpe = None, ir_envelpe = None):
         self.name_obw_1 = "Raman"
         self.name_obw_2 = "IR"
@@ -31,7 +35,7 @@ class DuEnvelope:
         except:
             print("Wrong inputs")
             
-    def make_envelopes(self):
+    def make_envelopes(self, progress_bar=None):
         if (self.type_of_band != "Gauss" and self.type_of_band != "Lorentz" and self.type_of_band != "Voigt"):
             raise Exception("Wrong name of gauss like curve!!!") 
             
@@ -48,6 +52,10 @@ class DuEnvelope:
             list_of_mods = data.load_file()
         else:
             raise Exception("File format not supported") 
+        
+        if progress_bar:
+            progress_bar['value'] = 20
+            self.application_gui.update_idletasks()
 
         #print("Data loaded")
         list_of_mods1 = ListOfMods(list_of_mods)
@@ -89,11 +97,18 @@ class DuEnvelope:
             self.raman_envelpe = self.raman_envelpe.transpose()
             print("raman envelope done")
             
+        if progress_bar:
+            progress_bar['value'] = 60
+            self.application_gui.update_idletasks()
+            
         if self.ir_raman != self.name_obw_1:
             self.ir_envelpe = Envelope(self.ir, self.nr_points, minimum, maximum, max_ir_intensity).do_envelope(self.type_of_band, Q1, Q2, proportional_to_height = self.proportional_to_height)
             self.ir_envelpe = self.ir_envelpe.transpose()
             print("IR envelope done")
-
+            
+        if progress_bar:
+            progress_bar['value'] = 100
+            self.application_gui.update_idletasks()
         #write resoults 
         '''
         if ir_raman != self.name_obw_2:

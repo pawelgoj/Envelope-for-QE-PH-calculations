@@ -45,12 +45,8 @@ class Dane:
        Returns:
            list: List of mods 
        """
-       try:  
-           file = open(self.name_of_file, "r")
-       except: 
-           print("There is no such file!!!")
-        
-       list_of_mods = Dane.read_data(file, self.start_data_read_in_line)
+
+       list_of_mods = Dane.read_data(self.name_of_file, self.start_data_read_in_line)
        return list_of_mods
            
     @staticmethod     
