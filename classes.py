@@ -4,7 +4,7 @@ Created on Sun Mar 14 23:16:18 2021
 
 @author: pagoj
 """
-from logging import raiseExceptions
+import logging
 import math as math
 import scipy.special as special
 import numpy as np
@@ -52,7 +52,18 @@ class Dane:
             
             
         return list_of_mods
-           
+    
+    def check_file_is_proper(self):
+        
+        val = True 
+        
+        with open(self.name_of_file, 'r') as file:
+            data = file.read()
+            if not (self.start_data_read_in_line in data):
+                val = False
+                
+        return val
+    
     @staticmethod     
     def read_data(file, start_data_read_in_line: str) -> list:
        line = ""
@@ -256,6 +267,7 @@ class Envelope:
                     wyniki[1,0:] = wyniki1[1,0:] + wyniki[1,0:]
                     
         else:
+            logging.error("Wrong curve type: Gauss/Lorentz/Voigt")
             raise Exception("Wrong curve type: Gauss/Lorentz/Voigt")
                     
         return wyniki

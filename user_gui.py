@@ -4,7 +4,6 @@ from tkinter import BaseWidget, Misc, ttk
 from tkinter import filedialog 
 from tkinter.messagebox import showinfo
 
-from pandas import DataFrame
 
 import re
 
@@ -18,6 +17,9 @@ import matplotlib.pyplot as plt
 
 from menu_functions import MenuFunctions
 from do_envelope import *
+
+global file 
+file = None
 
 
 class Navigation:
@@ -42,9 +44,13 @@ class CallBacks:
             
     @staticmethod
     def make_enevelopes():
+        application_gui.label_info.config(text='Wait!')
         #Envelope for Raman or IR or Both
         self_raman_check = raman_check.get()
         self_ir_check = ir_check.get()
+        
+        if self_raman_check == False and self_ir_check == False:
+            tk.messagebox.showwarning(message='Chose envelope for IR or/and Raman?', title='Warning!')
         progress_bar['value'] = 0
         
         if self_raman_check == True and self_ir_check == True:
@@ -58,23 +64,52 @@ class CallBacks:
             
         self_proportional_check = proportional_check.get()
         self_type_bound = str(type_bound.get())
-        self_entry_standard_deviation = float(application_gui.entry_standard_deviation.get())
-        self_entry_scale_param = float(application_gui.entry_scale_param.get())
-        self_entry_number_of_points = int(application_gui.entry_number_of_points.get())
         
+        if self_type_bound == 'Gauss':
+            try:
+                self_entry_standard_deviation = float(application_gui.entry_standard_deviation.get())
+                self_entry_scale_param = 0
+            except:
+                tk.messagebox.showwarning(message='Insert value to Entry!', title='Warning!')
+        elif self_type_bound == 'Lorentz':
+            try:
+                self_entry_scale_param = float(application_gui.entry_scale_param.get())
+            except:
+                tk.messagebox.showwarning(message='Insert value to Entry!', title='Warning!')
+            self_entry_standard_deviation = 0
+        else:
+            try:
+                self_entry_standard_deviation = float(application_gui.entry_standard_deviation.get())
+                self_entry_scale_param = float(application_gui.entry_scale_param.get())
+            except:
+                tk.messagebox.showwarning(message='Insert value to Entry!', title='Warning!')
+            
+        try:
+            self_entry_number_of_points = int(application_gui.entry_number_of_points.get())
+        except:
+            tk.messagebox.showwarning(message='Insert value to Entry!', title='Warning!')
         
         progress_bar['value'] = 10
         application_gui.update_idletasks()
         
-        do_envelope_object.set_param(file_type, self_type_bound, self_entry_standard_deviation, self_entry_scale_param, 
-                                 self_proportional_check, self_entry_number_of_points, file, ir_raman)
-        do_envelope_object.make_envelopes(progress_bar=progress_bar)
-        
-        
-        fig_ir, fig_raman = do_envelope_object.return_figs()
-        
-        application_gui.canvas_figure_ir.config(fig=fig_ir)
-        application_gui.canvas_figure_raman.config(fig=fig_raman)
+        if file == None:
+            
+            tk.messagebox.showwarning(message='Select a data file!', title='Warning!')
+            
+        else:  
+            do_envelope_object.set_param(file_type, self_type_bound, self_entry_standard_deviation, self_entry_scale_param, 
+                                    self_proportional_check, self_entry_number_of_points, file, ir_raman)
+            do_envelope_object.make_envelopes(progress_bar=progress_bar)
+            
+            
+            fig_ir, fig_raman = do_envelope_object.return_figs()
+            
+            application_gui.canvas_figure_ir.config(fig=fig_ir)
+            application_gui.canvas_figure_raman.config(fig=fig_raman)
+            
+            if progress_bar['value'] == 100:
+                application_gui.label_info.config(text='Done!')
+            
         application_gui.mainloop() 
         
     @staticmethod
@@ -84,10 +119,21 @@ class CallBacks:
         if file_name:
             do_envelope_object.save_envelopes(file_name)
         
-    #TODO implemnet this class 
+    #TODO
     @staticmethod
-    def export_figs():
-        pass
+    def disable_enable_lorentz_input():
+        application_gui.entry_scale_param.config(state='normal')
+        application_gui.entry_standard_deviation.config(state='disabled')
+    @staticmethod
+    def disable_enable_gauss_input():
+        application_gui.entry_standard_deviation.config(state='normal')
+        application_gui.entry_scale_param.config(state='disabled')
+    @staticmethod
+    def disable_enable_voigt_input():
+        application_gui.entry_scale_param.config(state='normal')
+        application_gui.entry_standard_deviation.config(state='normal')
+
+    
             
             
 #switch off message. 
@@ -143,8 +189,8 @@ class LabelInApp(tk.Label, WidgetInApp):
 
     def __init__(self, root: Misc, row: int, column: int,\
         columspan: int = 1, txt: str = "text in label"):
-        font_1 = font.Font(size = 11)
-        paddings = {'padx': 5, 'pady': 5}
+        font_1 = font.Font(size = 11, family='Arial')
+        paddings = {'padx': 5, 'pady': 5, 'ipadx': 2}
         background_color = {'bg': '#1E1E1E'}
         super().__init__(root, background_color, text = txt, fg='white', font=font_1, anchor='nw')
         self.grid(paddings, sticky='w', row=row, column=column, columnspan=columspan)
@@ -158,13 +204,19 @@ class ButtonInApp(tk.Button, WidgetInApp):
         columspan: int = 1, sticky='w', txt: str = "text on button",\
         function_app = None, image = None):
         self.image = image
-        font_1 = font.Font(size = 11)
-        paddings = {'padx': 5, 'pady': 5}
+        
+        #Configure font of button 
+        font_1 = font.Font(size = 11, family='Arial Black')
+        paddings = {'padx': 5, 'pady': 5, 'ipadx': 2}
         background_color_and_border = {'bg': '#403332', 'bd': 4}
+        
+
+
 
         if image != None:
             super().__init__(root, background_color_and_border, \
-                fg='white', font = font_1, text = txt, image = self.image, compound = 'left', command = function_app)
+                fg='white', font = font_1, text = txt, image = self.image, compound = 'left',\
+                    command = function_app)
         else:
             super().__init__(root, background_color_and_border, text = txt,\
                 fg='white', font = font_1, command = function_app)
@@ -174,7 +226,8 @@ class ButtonInApp(tk.Button, WidgetInApp):
 
 class EntryInApp(tk.Entry, WidgetInApp):
     def __init__(self, root: Misc, *args, **kwargs):
-        super().__init__(root, *args, **kwargs)
+        config_entry = {'disabledbackground': '#575757'}
+        super().__init__(root, *args, config_entry, **kwargs)
         self.add_mouse_wheel_interaction()
 
 
@@ -183,16 +236,10 @@ class FrameInApp(tk.Frame, WidgetInApp):
         super().__init__(root, *args, **kwargs)
         self.add_mouse_wheel_interaction()
 
-
-class LabelFrameInApp(tk.LabelFrame, WidgetInApp):
-    def __init__(self, root: Misc, *args, **kwargs):
-        super().__init__(root, *args, **kwargs)
-        self.add_mouse_wheel_interaction()
-
-
 class CheckbuttonInApp(tk.Checkbutton, WidgetInApp):
     def __init__(self, root: Misc, *args, **kwargs):
-        font_1 = font.Font(size = 11)
+        
+        font_1 = font.Font(size = 11, family='Arial')
         attributes = {'padx': 5, 'pady': 5, 'bg': '#1E1E1E', 'selectcolor': '#1E1E1E',\
             'activebackground': '#1E1E1E', 'fg': 'white'}
         super().__init__(root, attributes, font = font_1,  *args, **kwargs)
@@ -200,7 +247,8 @@ class CheckbuttonInApp(tk.Checkbutton, WidgetInApp):
         
 class RadioButtonInApp(tk.Radiobutton, WidgetInApp):
     def __init__(self, root: Misc, *args, **kwargs):
-        font_1 = font.Font(size = 11)
+        
+        font_1 = font.Font(size = 11, family='Arial')
         attributes = {'padx': 5, 'pady': 5, 'bg': '#1E1E1E', 'selectcolor': '#1E1E1E',\
             'activebackground': '#1E1E1E', 'fg': 'white'}
         super().__init__(root, attributes, font = font_1,  *args, **kwargs)
@@ -232,8 +280,8 @@ class MakeEnvelope(tk.Tk):
         self.title('Envelope for QE PH calculations')
         self.appname = 'Envelope for QE PH calculations'
         
-        #ico
-        self.iconphoto(False, tk.PhotoImage(file='fig_logo.png'))
+        #ico if true all other pop ups have this ico
+        self.iconphoto(True, tk.PhotoImage(file='fig_logo.png'))
 
 
         self.resizable(width=True, height=True)
@@ -348,15 +396,18 @@ class MakeEnvelope(tk.Tk):
         global type_bound 
         type_bound = tk.StringVar() 
         self.radio_button_gauss = RadioButtonInApp(self.frame_band_type, text='Gauss', 
-                                                   variable=type_bound, value='Gauss', state='normal')
+                                                   variable=type_bound, value='Gauss', state='normal',
+                                                       command=CallBacks.disable_enable_gauss_input)
         self.radio_button_gauss.grid(column=0, row=0, sticky = 'w')
 
         self.radio_button_lorentz = RadioButtonInApp(self.frame_band_type, text='Lorentz', 
-                                                     variable=type_bound, value='Lorentz', state='normal')
+                                                     variable=type_bound, value='Lorentz', state='normal',
+                                                        command=CallBacks.disable_enable_lorentz_input)
         self.radio_button_lorentz.grid(column=1, row=0, sticky = 'w')
 
         self.radio_button_voigt = RadioButtonInApp(self.frame_band_type, text='Voigt', 
-                                                   variable=type_bound, value='Voigt', state='normal')
+                                                   variable=type_bound, value='Voigt', state='normal',
+                                                   command=CallBacks.disable_enable_voigt_input)
         self.radio_button_voigt.grid(column=2, row=0, sticky = 'w')
         self.radio_button_gauss.select()
         
@@ -382,6 +433,7 @@ class MakeEnvelope(tk.Tk):
         self.label_scale_param = LabelInApp(self.frame_with_parameters_for_band, 0, 2, txt='Scale param:')
         self.entry_scale_param = EntryInApp(self.frame_with_parameters_for_band)
         self.entry_scale_param.grid(column=3, row=0, sticky = 'w')
+        self.entry_scale_param.config(state='disabled')
         
         self.label_number_of_points = LabelInApp(self.frame_with_parameters_for_band, 1, 0, 
                                                  txt='Number of points in envelope:')
@@ -402,10 +454,15 @@ class MakeEnvelope(tk.Tk):
         
         self.progres_label = LabelInApp(self.frame, 5, 0, txt='Progress:')
         
+        self.frame_with_progress_bar = FrameInApp(self.frame, self.background_color)
+        self.frame_with_progress_bar.grid(row = 6, column = 0, sticky='w')
+        
         global progress_bar
-        progress_bar = PrograsBarrInApp(self.frame, orient='horizontal', length=400, 
+        progress_bar = PrograsBarrInApp(self.frame_with_progress_bar, orient='horizontal', length=400, 
                                              mode='determinate')
-        progress_bar.grid(row = 6, column = 0, pady=20, sticky='w', padx=20)
+        progress_bar.grid(row = 0, column = 0, pady=20, sticky='w', padx=20)
+        
+        self.label_info = LabelInApp(self.frame_with_progress_bar, 0, 1, 1, txt=' ')
         
         self.frame_with_figs = FrameInApp(self.frame, self.background_color)
         self.frame_with_figs.grid(row=7, column=0, sticky='nw')
@@ -422,19 +479,6 @@ class MakeEnvelope(tk.Tk):
         fig1, ax1 = plt.subplots(figsize=(4.5, 3.5))
         fig2, ax2 = plt.subplots(figsize=(4.5, 3.5))
         
-        
-        #example data 
-        """
-        data1 = {'Country': ['US','CA','GER','UK','FR'],
-        'GDP_Per_Capita': [45000,42000,52000,49000,47000]}
-        df1 = DataFrame(data1,columns=['Country','GDP_Per_Capita'])  
-
-        df1 = df1[['Country','GDP_Per_Capita']].groupby('Country').sum()
-        df1.plot(kind='bar', legend=True, ax=ax1)
-        df1.plot(kind='bar', legend=True, ax=ax2)
-        ax1.set_title('Country Vs. GDP Per Capita')
-        ax2.set_title('Country Vs. GDP Per Capita')
-        """
 
         self.canvas_figure_ir = FigureCanvas(fig1, self.frame_ir_fig, 1, 0) 
 
@@ -445,8 +489,9 @@ if __name__ == '__main__':
     global application_gui
     application_gui = MakeEnvelope()
     do_envelope_object = DoEnvelope(application_gui)
+    application_gui.mainloop() 
 else: 
     print(__name__)
     raise Exception('The __name__ == __main__ !!!!!')
 
-application_gui.mainloop()       
+      

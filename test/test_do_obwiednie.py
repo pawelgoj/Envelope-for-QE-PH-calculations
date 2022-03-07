@@ -3,7 +3,6 @@ import pytest
 import os
 import pandas as pd
 import numpy as np
-import factory
 from pytest_factoryboy import register
 from classes import Results
 from do_envelope import DoEnvelope 
