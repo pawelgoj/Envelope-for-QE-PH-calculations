@@ -31,6 +31,7 @@ class DoEnvelope:
     
     def set_param(self, format_of_file: str, type_of_band: str, width_band_g: float, width_band_l: float, proportional_to_height: bool,
                  nr_points: int, file, ir_raman: str, raman_envelpe = None, ir_envelpe = None):
+        
         self.name_obw_1 = "Raman"
         self.name_obw_2 = "IR"
 
@@ -65,24 +66,38 @@ class DoEnvelope:
                 start_data_read_in_line = "# mode"
                 #data read 
                 data = Dane(self.file, start_data_read_in_line)
-                
+                self.file_content, self.first_column_file = data.check_file_content()
                 if data.check_file_is_proper() == False:
                     
                     tk.messagebox.showwarning(message='Wrong file!', title='Warning!')
                     logging.error("File format not supported")
                     raise Exception("File format not supported") 
-                
+                             
+                elif self.file_content == 'Wrong':
+                    
+                    tk.messagebox.showwarning(message='Wrong file!', title='Warning!')
+                    logging.error("File format not supported")
+                    raise Exception("File format not supported")
+                    
                 list_of_mods = data.load_file()
                 
             elif self.format_of_file == "txt":
                 
-                start_data_read_in_line = ""
+                start_data_read_in_line = "cm"
                 data = Dane(self.file, start_data_read_in_line)
+                self.file_content, self.first_column_file = data.check_file_content()
+                
                 if data.check_file_is_proper() == False:
                     
                     tk.messagebox.showwarning(message='Wrong file!', title='Warning!')
                     logging.error("File format not supported")
                     raise Exception("File format not supported") 
+                
+                elif self.file_content == 'Wrong':
+                    
+                    tk.messagebox.showwarning(message='Wrong file!', title='Warning!')
+                    logging.error("File format not supported")
+                    raise Exception("File format not supported")
                 
                 list_of_mods = data.load_file()
                 
@@ -95,34 +110,63 @@ class DoEnvelope:
                 self.application_gui.update_idletasks()
 
             #print("Data loaded")
-            list_of_mods1 = ListOfMods(list_of_mods)
+            list_of_mods1 = ListOfMods(list_of_mods, self.format_of_file, self.first_column_file)
 
             minimum, maximum = list_of_mods1.max_min()
-
+            print(minimum, maximum)
             if self.ir_raman == self.name_obw_1:
-                self.raman = list_of_mods1.raman() #list of raman mods 
-                max_raman_intensity = list_of_mods1.raman_max_intensity()
+                
+                if self.file_content == self.name_obw_1 or self.file_content == 'Both':
+                    
+                    self.raman = list_of_mods1.raman() #list of raman mods 
+                    max_raman_intensity = list_of_mods1.raman_max_intensity()
+                    
+                else: 
+                    tk.messagebox.showwarning(message='File not contain Raman data!',
+                                              title='Warning!')
+                    logging.error("File not contain Raman data!")
+                    raise Exception("File format not supported")
                 
             elif self.ir_raman == self.name_obw_2:
-                self.ir = list_of_mods1.ir() #list of ir mods 
-                max_ir_intensity = list_of_mods1.ir_max_intensity()
+                
+                if self.file_content == self.name_obw_2 or self.file_content == 'Both':
+                    
+                    self.ir = list_of_mods1.ir() #list of ir mods 
+                    max_ir_intensity = list_of_mods1.ir_max_intensity()
+                    
+                else:
+                    tk.messagebox.showwarning(message='File not contain IR data!', 
+                                              title='Warning!')
+                    logging.error("File not contain IR data!")
+                    raise Exception("File format not supported")
                 
             else: 
-                max_ir_intensity = list_of_mods1.ir_max_intensity()
-                max_raman_intensity = list_of_mods1.raman_max_intensity()
-                self.raman = list_of_mods1.raman()
-                self.ir = list_of_mods1.ir()
+                if self.file_content == 'Both':
+                    max_ir_intensity = list_of_mods1.ir_max_intensity()
+                    max_raman_intensity = list_of_mods1.raman_max_intensity()
+                    self.raman = list_of_mods1.raman()
+                    self.ir = list_of_mods1.ir()
+                    
+                else:
+                    tk.messagebox.showwarning(message='File not contain IR or/and Raman data!', 
+                                              title='Warning!')
+                    logging.error("File not contain IR data!")
+                    raise Exception("File format not supported")
+                    
 
             #create envelope 
             if self.type_of_band == "Voigt":
                 Q1 = self.width_band_g
                 Q2 = self.width_band_l
+                
             elif self.type_of_band == "Lorentz": 
                 Q1 = self.width_band_l
                 Q2 = 0
+                
             elif self.type_of_band == "Gauss":
                 Q1 = self.width_band_g
                 Q2 = 0
+                
             else:
                 logging.error("Wrong curve type: Gauss/Lorentz/Voigt")
                 raise Exception("Wrong curve type: Gauss/Lorentz/Voigt")

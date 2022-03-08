@@ -2,8 +2,6 @@ import tkinter as tk
 import tkinter.font as font
 from tkinter import BaseWidget, Misc, ttk
 from tkinter import filedialog 
-from tkinter.messagebox import showinfo
-
 
 import re
 
@@ -12,15 +10,13 @@ from abc import ABC
 from matplotlib.backends.backend_tkagg import (
     FigureCanvasTkAgg, NavigationToolbar2Tk)
 # Implement the default Matplotlib key bindings.
-from matplotlib.backend_bases import key_press_handler
 import matplotlib.pyplot as plt
 
 from menu_functions import MenuFunctions
 from do_envelope import *
 
-global file 
+#globals 
 file = None
-
 
 class Navigation:
     @staticmethod 
@@ -44,7 +40,6 @@ class CallBacks:
             
     @staticmethod
     def make_enevelopes():
-        application_gui.label_info.config(text='Wait!')
         #Envelope for Raman or IR or Both
         self_raman_check = raman_check.get()
         self_ir_check = ir_check.get()
@@ -65,38 +60,51 @@ class CallBacks:
         self_proportional_check = proportional_check.get()
         self_type_bound = str(type_bound.get())
         
+        all_correct = True
+        
         if self_type_bound == 'Gauss':
             try:
                 self_entry_standard_deviation = float(application_gui.entry_standard_deviation.get())
                 self_entry_scale_param = 0
             except:
                 tk.messagebox.showwarning(message='Insert value to Entry!', title='Warning!')
+                all_correct = False
+                
         elif self_type_bound == 'Lorentz':
             try:
                 self_entry_scale_param = float(application_gui.entry_scale_param.get())
             except:
                 tk.messagebox.showwarning(message='Insert value to Entry!', title='Warning!')
+                all_correct = False
+                
             self_entry_standard_deviation = 0
         else:
             try:
                 self_entry_standard_deviation = float(application_gui.entry_standard_deviation.get())
                 self_entry_scale_param = float(application_gui.entry_scale_param.get())
+
             except:
                 tk.messagebox.showwarning(message='Insert value to Entry!', title='Warning!')
+                all_correct = False
             
         try:
             self_entry_number_of_points = int(application_gui.entry_number_of_points.get())
+
         except:
             tk.messagebox.showwarning(message='Insert value to Entry!', title='Warning!')
+            all_correct = False
         
-        progress_bar['value'] = 10
-        application_gui.update_idletasks()
         
         if file == None:
             
             tk.messagebox.showwarning(message='Select a data file!', title='Warning!')
             
-        else:  
+        elif all_correct == True:
+            
+            application_gui.label_info.config(text='Wait!')
+            progress_bar['value'] = 10
+            application_gui.update_idletasks()
+            
             do_envelope_object.set_param(file_type, self_type_bound, self_entry_standard_deviation, self_entry_scale_param, 
                                     self_proportional_check, self_entry_number_of_points, file, ir_raman)
             do_envelope_object.make_envelopes(progress_bar=progress_bar)
@@ -109,17 +117,25 @@ class CallBacks:
             
             if progress_bar['value'] == 100:
                 application_gui.label_info.config(text='Done!')
+                
+            else:
+                application_gui.label_info.config(text='')
+                progress_bar['value'] == 0
             
-        application_gui.mainloop() 
+            
+        application_gui.update_idletasks()
         
     @staticmethod
     def save_files():
         file_name = filedialog.asksaveasfilename(filetypes=[("text file","*.csv")], defaultextension = "*.csv")
-        print(file_name)
+
         if file_name:
-            do_envelope_object.save_envelopes(file_name)
+            try:
+                do_envelope_object.save_envelopes(file_name)
+            except:
+                tk.messagebox.showwarning(message='There is no data to save!', title='Warning!')
+                application_gui.update_idletasks()
         
-    #TODO
     @staticmethod
     def disable_enable_lorentz_input():
         application_gui.entry_scale_param.config(state='normal')
@@ -132,8 +148,44 @@ class CallBacks:
     def disable_enable_voigt_input():
         application_gui.entry_scale_param.config(state='normal')
         application_gui.entry_standard_deviation.config(state='normal')
-
-    
+        
+    #callbacks for buttons change figure 
+    @staticmethod
+    def press_change_button_input_fig(event):
+        global image_file_button_input_press
+        application_gui.button_input_file.config(image=image_file_button_input_press)
+        application_gui.update_idletasks()
+        
+    @staticmethod
+    def reless_change_button_input_fig(event):
+        global image_file_button_input_rellase
+        application_gui.button_input_file.config(image=image_file_button_input_rellase)
+        application_gui.update_idletasks()
+        
+    @staticmethod
+    def press_change_button_calculate_fig(event):
+        global image_file_button_calculate_press
+        application_gui.button_start_process.config(image=image_file_button_calculate_press)
+        application_gui.update_idletasks()
+        
+    @staticmethod
+    def reless_change_button_calculate_fig(event):
+        global image_file_button_calculate_rellase
+        application_gui.button_start_process.config(image=image_file_button_calculate_rellase)
+        application_gui.update_idletasks()
+        
+    @staticmethod
+    def press_change_button_export_data_fig(event):
+        global image_file_button_export_data_press
+        application_gui.button_export_data.config(image=image_file_button_export_data_press)
+        application_gui.update_idletasks()
+        
+    @staticmethod
+    def reless_change_button_export_data_fig(event):
+        global image_file_button_export_data_rellase
+        application_gui.button_export_data.config(image=image_file_button_export_data_rellase)
+        application_gui.update_idletasks()
+        
             
             
 #switch off message. 
@@ -188,12 +240,12 @@ class LabelInApp(tk.Label, WidgetInApp):
     """Label in aplication CFWDFL"""
 
     def __init__(self, root: Misc, row: int, column: int,\
-        columspan: int = 1, txt: str = "text in label"):
+        columspan: int = 1, txt: str = "text in label", rowspan: int = 1):
         font_1 = font.Font(size = 11, family='Arial')
         paddings = {'padx': 5, 'pady': 5, 'ipadx': 2}
-        background_color = {'bg': '#1E1E1E'}
-        super().__init__(root, background_color, text = txt, fg='white', font=font_1, anchor='nw')
-        self.grid(paddings, sticky='w', row=row, column=column, columnspan=columspan)
+        background_color = {'bg': '#263238'}
+        super().__init__(root, background_color, text = txt, fg='#eceff1', font=font_1, anchor='nw')
+        self.grid(paddings, sticky='w', row=row, column=column, columnspan=columspan, rowspan=rowspan)
         self.add_mouse_wheel_interaction()
 
 
@@ -208,18 +260,16 @@ class ButtonInApp(tk.Button, WidgetInApp):
         #Configure font of button 
         font_1 = font.Font(size = 11, family='Arial Black')
         paddings = {'padx': 5, 'pady': 5, 'ipadx': 2}
-        background_color_and_border = {'bg': '#403332', 'bd': 4}
-        
-
-
+        background_color_and_border = {'bg': '#455a64', 'bd': 2}
 
         if image != None:
             super().__init__(root, background_color_and_border, \
-                fg='white', font = font_1, text = txt, image = self.image, compound = 'left',\
+                fg='#eceff1', font = font_1, text = txt, image = self.image, compound = 'left',\
                     command = function_app)
+            self.config(activeforeground= '#263238', activebackground='#eceff1')
         else:
             super().__init__(root, background_color_and_border, text = txt,\
-                fg='white', font = font_1, command = function_app)
+                fg='#eceff1', font = font_1, command = function_app)
         self.grid(paddings, sticky=sticky, row=row, column=column, columnspan=columspan)
         self.add_mouse_wheel_interaction()
 
@@ -240,8 +290,8 @@ class CheckbuttonInApp(tk.Checkbutton, WidgetInApp):
     def __init__(self, root: Misc, *args, **kwargs):
         
         font_1 = font.Font(size = 11, family='Arial')
-        attributes = {'padx': 5, 'pady': 5, 'bg': '#1E1E1E', 'selectcolor': '#1E1E1E',\
-            'activebackground': '#1E1E1E', 'fg': 'white'}
+        attributes = {'padx': 5, 'pady': 5, 'bg': '#263238', 'selectcolor': '#263238',\
+            'activebackground': '#263238', 'fg': '#eceff1'}
         super().__init__(root, attributes, font = font_1,  *args, **kwargs)
         self.add_mouse_wheel_interaction()
         
@@ -249,14 +299,14 @@ class RadioButtonInApp(tk.Radiobutton, WidgetInApp):
     def __init__(self, root: Misc, *args, **kwargs):
         
         font_1 = font.Font(size = 11, family='Arial')
-        attributes = {'padx': 5, 'pady': 5, 'bg': '#1E1E1E', 'selectcolor': '#1E1E1E',\
-            'activebackground': '#1E1E1E', 'fg': 'white'}
+        attributes = {'padx': 5, 'pady': 5, 'bg': '#263238', 'selectcolor': '#263238',\
+            'activebackground': '#263238', 'fg': '#eceff1'}
         super().__init__(root, attributes, font = font_1,  *args, **kwargs)
         self.add_mouse_wheel_interaction()
 
 
 class MessageInApp(tk.Message, WidgetInApp):
-    def __init__(self, root: Misc, *args, fg: str='white', **kwargs):
+    def __init__(self, root: Misc, *args, fg: str='#eceff1', **kwargs):
         super().__init__(root, *args, fg=fg, **kwargs)
         self.add_mouse_wheel_interaction()
 
@@ -269,7 +319,7 @@ class CanvaInApp(tk.Canvas, WidgetInApp):
         
 class MakeEnvelope(tk.Tk):
     
-    def __init__(self, background_color: str = '#1E1E1E', regular_font_size: int = 11, heading_font_size: int = 12, \
+    def __init__(self, background_color: str = '#263238', regular_font_size: int = 11, heading_font_size: int = 12, \
         message_box_font_size: int = 12, paddings: dict = {'padx': 5, 'pady': 5}):
         
         self.background_color_value = background_color
@@ -297,6 +347,21 @@ class MakeEnvelope(tk.Tk):
         self.createWidgets()
     
     def createWidgets(self):
+        #globals 
+        global image_file_button_input_press
+        image_file_button_input_press = tk.PhotoImage(file = r"plik_dark.png")
+        global image_file_button_input_rellase
+        image_file_button_input_rellase = tk.PhotoImage(file = r"plik.png")
+        
+        global image_file_button_calculate_press
+        image_file_button_calculate_press = tk.PhotoImage(file = r"proces_dark.png")
+        global image_file_button_calculate_rellase
+        image_file_button_calculate_rellase = tk.PhotoImage(file = r"proces.png")
+        
+        global image_file_button_export_data_press
+        image_file_button_export_data_press = tk.PhotoImage(file = r"rysunek_dark.png")
+        global image_file_button_export_data_rellase
+        image_file_button_export_data_rellase = tk.PhotoImage(file = r"rysunek.png")
         
         #menu bar 
         
@@ -364,12 +429,14 @@ class MakeEnvelope(tk.Tk):
         image_file = tk.PhotoImage(file = r"plik.png")
         image_file = image_file.subsample(1, 1)
         self.button_input_file = ButtonInApp(self.frame_with_buttons, 0, 0, 1, txt='Chose input file', image=image_file, function_app = CallBacks.get_folder_path)
-
-               
+        self.button_input_file.bind('<ButtonPress-1>', CallBacks.press_change_button_input_fig)
+        self.button_input_file.bind('<ButtonRelease-1>', CallBacks.reless_change_button_input_fig)
+        
         self.frame_with_options= FrameInApp(self.frame, self.background_color)
         self.frame_with_options.grid(row=1, column=0, sticky='nw')
         
-        self.frame_chose_type_of_spectra = FrameInApp(self.frame_with_options, self.background_color, highlightthickness=2)
+        self.frame_chose_type_of_spectra = FrameInApp(self.frame_with_options, self.background_color, 
+                                                      highlightthickness=2, highlightbackground='#cfd8dc')
         self.frame_chose_type_of_spectra.grid(column=0, row=0, sticky = 'nw')
         self.label_spectra_type = LabelInApp(self.frame_chose_type_of_spectra, 0, 0, txt='Envelope for:')
         
@@ -387,7 +454,7 @@ class MakeEnvelope(tk.Tk):
 
         
         self.frame_with_bond_type = FrameInApp(self.frame_with_options, self.background_color,
-                                                highlightthickness=2)
+                                                highlightthickness=2, highlightbackground='#cfd8dc')
         self.frame_with_bond_type.grid(column=3, row=0, sticky='w')
         self.label_band_type = LabelInApp(self.frame_with_bond_type, 0,0, txt='Band type:')
         self.frame_band_type = FrameInApp(self.frame_with_bond_type, self.background_color)
@@ -415,17 +482,27 @@ class MakeEnvelope(tk.Tk):
         proportional_check = tk.BooleanVar()
         
         self.frame_proportional_to_intensity = FrameInApp(self.frame_with_options, self.background_color, 
-                                                          highlightthickness=2)
+                                                          highlightthickness=2, highlightbackground='#cfd8dc')
         self.frame_proportional_to_intensity.grid(column=4, row=0, sticky='w')
 
         self.check_button_proportional_to_intensity = CheckbuttonInApp(self.frame_proportional_to_intensity, 
-                                                                        text='Proportional to intensity:',
+                                                                        text='Proportional to intensity',
                                                                         variable = proportional_check,
                                                                         onvalue = True, offvalue = False)
         self.check_button_proportional_to_intensity.grid(column=0, row=0, sticky='w')
-                
-        self.frame_with_parameters_for_band = FrameInApp(self.frame, self.background_color)
-        self.frame_with_parameters_for_band.grid(column=0, row=3, sticky='nw')
+        
+        
+        
+        
+        self.frame_with_image = FrameInApp(self.frame, self.background_color)
+        self.frame_with_image.grid(column=0, row=3, sticky='nw')
+        
+        self.photo_logo_big = tk.PhotoImage(file = r"fig_logo_white.png")
+        self.label_number_of_points = LabelInApp(self.frame_with_image, 0, 1, txt='', rowspan=4)
+        self.label_number_of_points.config(image=self.photo_logo_big)
+        
+        self.frame_with_parameters_for_band = FrameInApp(self.frame_with_image, self.background_color)
+        self.frame_with_parameters_for_band.grid(column=0, row=0, sticky='nw')
         self.label_standard_deviation = LabelInApp(self.frame_with_parameters_for_band, 0, 0,
                                                    txt='Standard deviation:')
         self.entry_standard_deviation = EntryInApp(self.frame_with_parameters_for_band)
@@ -440,27 +517,40 @@ class MakeEnvelope(tk.Tk):
         self.entry_number_of_points = EntryInApp(self.frame_with_parameters_for_band)
         self.entry_number_of_points.grid(column=1, row=1, sticky = 'w')
 
-        self.frame_precess_button = FrameInApp(self.frame, self.background_color)
-        self.frame_precess_button.grid(column=0, row=4, sticky='w')
+        self.frame_precess_button = FrameInApp(self.frame_with_image, self.background_color)
+        self.frame_precess_button.grid(column=0, row=1, sticky='w')
         image_process = tk.PhotoImage(file = r"proces.png")
         image_process = image_process.subsample(1, 1)
         self.button_start_process = ButtonInApp(self.frame_precess_button, 0, 0, 1, 
                                                 txt='Calculate envelope', image=image_process, 
                                                 function_app = CallBacks.make_enevelopes)
+        
+        self.button_start_process.bind('<ButtonPress-1>', CallBacks.press_change_button_calculate_fig)
+        self.button_start_process.bind('<ButtonRelease-1>', CallBacks.reless_change_button_calculate_fig)
+        
         photo = tk.PhotoImage(file = r"rysunek.png")
         photoimage = photo.subsample(1, 1)
         self.button_export_data = ButtonInApp(self.frame_precess_button, 0, 1, 1, txt='Export data',  
                                             image=photoimage, function_app =CallBacks.save_files)
+
+        self.button_export_data.bind('<ButtonPress-1>', CallBacks.press_change_button_export_data_fig)
+        self.button_export_data.bind('<ButtonRelease-1>', CallBacks.reless_change_button_export_data_fig)
         
-        self.progres_label = LabelInApp(self.frame, 5, 0, txt='Progress:')
+        self.progres_label = LabelInApp(self.frame_with_image, 2, 0, txt='Progress:')
         
-        self.frame_with_progress_bar = FrameInApp(self.frame, self.background_color)
-        self.frame_with_progress_bar.grid(row = 6, column = 0, sticky='w')
+        self.frame_with_progress_bar = FrameInApp(self.frame_with_image, self.background_color)
+        self.frame_with_progress_bar.grid(row = 3, column = 0, sticky='w')
         
         global progress_bar
-        progress_bar = PrograsBarrInApp(self.frame_with_progress_bar, orient='horizontal', length=400, 
-                                             mode='determinate')
-        progress_bar.grid(row = 0, column = 0, pady=20, sticky='w', padx=20)
+        #configure style progres barr
+        style_progressbar = ttk.Style()
+        style_progressbar.theme_use('default')
+        style_progressbar.configure('blue.Horizontal.TProgressbar', foreground='#abe5a8', background='#4cd87d')
+        
+        progress_bar = PrograsBarrInApp(self.frame_with_progress_bar, orient='horizontal',
+                                        length=400, mode='determinate', style='blue.Horizontal.TProgressbar')
+        progress_bar.grid(row = 0, column = 0, pady=5, sticky='w', padx=20)
+
         
         self.label_info = LabelInApp(self.frame_with_progress_bar, 0, 1, 1, txt=' ')
         

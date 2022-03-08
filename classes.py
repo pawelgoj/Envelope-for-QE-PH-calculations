@@ -64,6 +64,39 @@ class Dane:
                 
         return val
     
+    def check_file_content(self):
+        val = 'Wrong'
+        
+        with open(self.name_of_file, 'r') as file:
+            
+            data = file.read()
+            first_column = 'None'
+            
+            if ('Raman' in data) and ('IR' in data):
+                
+                val = 'Both'
+                raman_position = data.find('Raman')
+                ir_position = data.find('IR')
+                
+                if raman_position > ir_position:
+                    
+                    first_column = 'IR'
+                    
+                elif ir_position > raman_position:
+                    
+                    first_column = 'Raman'
+                
+            elif 'Raman' in data:
+                val = 'Raman'
+            
+            elif 'IR' in data:
+                val = 'IR'
+                
+            else: 
+                val = 'Wrong'
+                
+        return val, first_column
+    
     @staticmethod     
     def read_data(file, start_data_read_in_line: str) -> list:
        line = ""
@@ -96,8 +129,12 @@ class Dane:
 class ListOfMods:
     """The object is the mods tables from loaded files
     """
-    def __init__(self, list_of_mods: list):
+    
+    def __init__(self, list_of_mods: list, file_type: str, first_column_file: str):
+        
         self.list_of_mods = list_of_mods
+        self.file_type = file_type
+        self.first_column_file = first_column_file
         
     def max_min(self) -> tuple:
         """Return max and min wavenumber from list of mods 
@@ -106,11 +143,15 @@ class ListOfMods:
             tuple: min, max
         """
         
-        if len(self.list_of_mods[0]) == 3:
+        if self.file_type == 'txt':
             i = 0
             
-        else:
+        elif self.file_type == 'dynmat':
             i = 1
+            
+        else: 
+            logging.error('Not supported file type!')
+            raise Exception('Not supported file type!')
             
         minOf = math.ceil(self.list_of_mods[0][i] - 5)
         lenght = len(self.list_of_mods) - 1
@@ -118,23 +159,51 @@ class ListOfMods:
         
         return minOf, maxOf
     
+    @staticmethod
+    def find_max(list_s: list, i: int):
+        
+        max_item = 0
+        
+        for item in list_s:
+            if max_item < item[i]:
+                max_item = item[i]
+        
+        return max_item
+    
     def raman_max_intensity(self):
-        
-        max_item = 0 
-        
-        for item in self.list_of_mods:
-            if max_item < item[4]:
-                max_item = item[4]
-                
+        if len(self.list_of_mods[0]) == 2:
+            max_item = ListOfMods.find_max(self.list_of_mods, 1)
+            
+        elif len(self.list_of_mods[0]) == 3 and self.first_column_file == 'IR':
+            max_item = ListOfMods.find_max(self.list_of_mods, 2)
+            
+        elif len(self.list_of_mods[0]) == 3 and self.first_column_file == 'Raman':
+            max_item = ListOfMods.find_max(self.list_of_mods, 1)
+            
+        elif len(self.list_of_mods[0]) == 5:
+            max_item = ListOfMods.find_max(self.list_of_mods, 3)
+            
+        else:
+            max_item = ListOfMods.find_max(self.list_of_mods, 4)
+
         return max_item
     
     def ir_max_intensity(self):
-        
-        max_item = 0 
-        
-        for item in self.list_of_mods:
-            if max_item < item[3]:
-                max_item = item[3]
+        if len(self.list_of_mods[0]) == 2:
+            max_item = ListOfMods.find_max(self.list_of_mods, 1)
+            
+        elif len(self.list_of_mods[0]) == 3 and self.first_column_file == 'IR':
+            max_item = ListOfMods.find_max(self.list_of_mods, 2)
+            
+        elif len(self.list_of_mods[0]) == 3 and self.first_column_file == 'Raman':
+            max_item = ListOfMods.find_max(self.list_of_mods, 1)
+            
+        elif len(self.list_of_mods[0]) == 5:
+            max_item = ListOfMods.find_max(self.list_of_mods, 3)
+            
+        else:
+            max_item = ListOfMods.find_max(self.list_of_mods, 4)
+
         
         return max_item
     
@@ -144,12 +213,35 @@ class ListOfMods:
         Returns:
             list: list of Raman mods 
         """
-        if len(self.list_of_mods[0]) == 3:
+        if len(self.list_of_mods[0]) == 2:
+            x1, x2 = zip(*self.list_of_mods)
+            raman = list(zip(x1, x2))
+            del x1
+            del x2
+            
+        elif len(self.list_of_mods[0]) == 3 and self.first_column_file == 'IR':
             x1, x2, x3 = zip(*self.list_of_mods)
             raman = list(zip(x1, x3))
             del x1 
             del x2
-            del x3 
+            del x3
+            
+        elif len(self.list_of_mods[0]) == 3 and self.first_column_file == 'Raman':
+            x1, x2, x3 = zip(*self.list_of_mods)
+            raman = list(zip(x1, x2))
+            del x1 
+            del x2
+            del x3
+            
+        elif len(self.list_of_mods[0]) == 5:
+            x1, x2, x3, x4, x5 = zip(*self.list_of_mods)
+            raman = list(zip(x2, x4))
+            del x1 
+            del x2
+            del x3
+            del x4
+            del x5
+            
         else:
             x1, x2, x3, x4, x5, x6 = zip(*self.list_of_mods)
             raman = list(zip(x2, x5))
@@ -159,6 +251,7 @@ class ListOfMods:
             del x4
             del x5
             del x6
+            
         return raman
 
     def ir(self) -> list:
@@ -167,12 +260,34 @@ class ListOfMods:
         Returns:
             list: list of ir mods 
         """
-        if len(self.list_of_mods[0]) == 3:
+        if len(self.list_of_mods[0]) == 2:
+            x1, x2 = zip(*self.list_of_mods)
+            ir = list(zip(x1, x2))
+            del x1
+            del x2
+            
+        elif len(self.list_of_mods[0]) == 3 and self.first_column_file == 'IR':
             x1, x2, x3 = zip(*self.list_of_mods)
             ir = list(zip(x1, x2))
             del x1 
             del x2
-            del x3 
+            del x3
+            
+        elif len(self.list_of_mods[0]) == 3 and self.first_column_file == 'Raman':
+            x1, x2, x3 = zip(*self.list_of_mods)
+            ir = list(zip(x1, x3))
+            del x1 
+            del x2
+            del x3
+            
+        elif len(self.list_of_mods[0]) == 4:
+            x1, x2, x3, x4 = zip(*self.list_of_mods)
+            ir = list(zip(x2, x4))
+            del x1 
+            del x2
+            del x3
+            del x4
+            
         else:
             x1, x2, x3, x4, x5, x6 = zip(*self.list_of_mods)
             ir = list(zip(x2, x4))
@@ -182,6 +297,7 @@ class ListOfMods:
             del x4
             del x5
             del x6
+            
         return ir
 
 class Pasmo:
@@ -225,6 +341,7 @@ class Pasmo:
  
 class Envelope:
     """objects are lists of bands for Raman or Ir"""
+    
     def __init__(self, curve: list, nr_points: int, minimum: float, maximum: float, max_intensity: float):
         self.curve = curve
         self.nr_points = nr_points
@@ -273,7 +390,8 @@ class Envelope:
         return wyniki
 
 class Results: 
-    """Objects are the results to save or draw"""
+    """Objects are results to save or draw"""
+    
     def __init__(self, wyniki: DataFrame, wyniki_ir = None, wyniki_raman = None):
         
         self.wyniki = wyniki 
@@ -292,6 +410,7 @@ class Results:
             intensity_ir (list): List of mods ir 
             intensity_rama (list): List of mods raman
         """
+        
         Fig_title_ir = "IR"
         Fig_title_raman = "Raman"
         
