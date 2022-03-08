@@ -3,10 +3,10 @@ import pytest
 import os
 import pandas as pd
 import numpy as np
-import factory
 from pytest_factoryboy import register
 from classes import Results
-from do_envelope import DuEnvelope 
+from do_envelope import DoEnvelope 
+import matplotlib.pyplot as plt
 
 
 class Preconditions:
@@ -40,26 +40,16 @@ class Preconditions:
 
 @pytest.mark.usefixtures("setup")
 class TestDoEnvelope(Preconditions):
-    
-    def test_save_envelopes(self):
-        
-        raman_envelpe = np.array([[1,2],
-                                [1,2]])
-        ir_envelpe = np.array([[1,2],
-                                [1,2]])
-        du_envelope = DuEnvelope(None, None, None, None, None, None, None,None, 
-                                 raman_envelpe = raman_envelpe, ir_envelpe = ir_envelpe)
-        du_envelope.save_envelopes(self.path_results)
-        assert os.path.isfile(self.path_results)
 
     def test_do_envelopes(self):
-        
-        du_envelope = DuEnvelope('dynmat', 'Voigt', 3, 2, False, 500, self.file_with_data,'Both')
-        du_envelope.make_envelopes()
-        du_envelope.save_envelopes(self.path_results)
+        do_envelope = DoEnvelope()
+        do_envelope.set_param('dynmat', 'Voigt', 3, 2, False, 500, self.file_with_data,'Both')
+        do_envelope.make_envelopes()
+        do_envelope.save_envelopes(self.path_results)
         
         assert os.path.isfile(self.path_results)
 
+    #The app no longer has console interaction
     @pytest.mark.skip
     def test_input(self, script_runner, mocker):
         
@@ -72,17 +62,37 @@ class TestDoEnvelope(Preconditions):
             "number of pints, file name, label name and Raman/IR/Both\nData loaded\nraman "\
             "envelope done\nIR envelope done\nresult saved\n"
             
-
-            
-            
+    def test_return_figs(self):
+        #Given 
+        do_envelope = DoEnvelope()
+        
+        #When
+        do_envelope.set_param('dynmat', 'Voigt', 3, 2, False, 500, self.file_with_data,'Both')
+        do_envelope.make_envelopes()
+        ir_fig, raman_fig = do_envelope.return_figs()
+        
+        #Then
+        ir_fig.savefig("output1", dpi=100)
+        raman_fig.savefig("output2", dpi=100)
+        plt.close()
+        
+                  
 @pytest.mark.classes_test
 @pytest.mark.usefixtures("setup")
 class TestResults(Preconditions):
     def test_save_data(self):
+        
+        #Given 
+        array1 = np.array([[0,1,2],[0,1,2]])
+        array2 = np.array([[0,1,2],[0,1,2]])
         d = {'cm-1': [1, 2, 3], 'IR': [0,2,4], '2cm-1': [4,5,6], 'Raman': [1,2,3]}
         df = pd.DataFrame(data=d)
-        results = Results(df, self.path_results)
-        results.save_data()
+        results = Results(df,array1,array2)
+        
+        #When
+        results.save_data(self.path_results)
+        
+        #Then
         assert os.path.isfile(self.path_results)
        
         
