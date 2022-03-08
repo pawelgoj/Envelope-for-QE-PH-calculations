@@ -6,6 +6,7 @@ Created on Sun Mar 14 23:16:18 2021
 """
 import logging
 import math as math
+from typing import Tuple
 import scipy.special as special
 import numpy as np
 import matplotlib.pyplot as plt
@@ -46,7 +47,9 @@ class Dane:
         Returns:
            list: List of mods 
         """
+        
         with open(self.name_of_file, 'r') as file:
+
            
             list_of_mods = Dane.read_data(file, self.start_data_read_in_line)
             
@@ -104,12 +107,14 @@ class Dane:
        if start_data_read_in_line != "":
            
            while start_data_read_in_line not in line: 
+
                line = file.readline()
            
-       list_of_mods =[]
+       listOfMods =[]
        line = file.readline()
        
        if start_data_read_in_line == "":
+
            line = file.readline()
            
        while not ("" == line or "\n" == line) :
@@ -125,6 +130,7 @@ class Dane:
        file.close()
        
        return list_of_mods  
+
 
 class ListOfMods:
     """The object is the mods tables from loaded files
@@ -243,7 +249,7 @@ class ListOfMods:
             del x5
             
         else:
-            x1, x2, x3, x4, x5, x6 = zip(*self.list_of_mods)
+            x1, x2, x3, x4, x5, x6 = zip(*self.listOfMods)
             raman = list(zip(x2, x5))
             del x1
             del x2
@@ -289,7 +295,7 @@ class ListOfMods:
             del x4
             
         else:
-            x1, x2, x3, x4, x5, x6 = zip(*self.list_of_mods)
+            x1, x2, x3, x4, x5, x6 = zip(*self.listOfMods)
             ir = list(zip(x2, x4))
             del x1
             del x2
@@ -373,6 +379,7 @@ class Envelope:
             for i in range(0, len(self.curve)):
                 if self.curve[i][1] > 0.001:
                     wyniki1 = np.array(Pasmo(self.curve[i][1], self.curve[i][0], self.nr_points, self.minimum, self.maximum, proportional_to_height, self.max_intensity).voigtcurve(Q1, Q2))
+
                     wyniki[0,0:] = wyniki1[0,0:]
                     wyniki[1,0:] = wyniki1[1,0:] + wyniki[1,0:]
                     
@@ -380,6 +387,7 @@ class Envelope:
             for i in range(0, len(self.curve)):
                 if self.curve[i][1] > 0.001:
                     wyniki1 = np.array(Pasmo(self.curve[i][1], self.curve[i][0], self.nr_points, self.minimum, self.maximum, proportional_to_height, self.max_intensity).voigtcurve(Q1, 0))
+
                     wyniki[0,0:] = wyniki1[0,0:]
                     wyniki[1,0:] = wyniki1[1,0:] + wyniki[1,0:]
                     
