@@ -24,7 +24,7 @@ If only one spectra is used two columns are needed 'cm-1' and 'IR' or 'Raman'.
 - Lorentz - Cauchy curve (Lorentz) of single band
 - Voigt - Voigt curve of single band
 
-Proportional to intensity option causes standard deviation and scale param are proportional to intensity. Only the greatest intensity have the entered values of standard deviation and scale param. These values decrease with intensity.
+Proportional to intensity option causes standard deviation and scale param are proportional to intensity. Only the greatest intensity has the entered values of standard deviation and scale param. These values decrease with intensity.
 
 To obtain accurate envelopes number of points in envelope must be greater than 500.
 
