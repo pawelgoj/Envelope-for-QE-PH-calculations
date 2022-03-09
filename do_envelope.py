@@ -113,7 +113,7 @@ class DoEnvelope:
             list_of_mods1 = ListOfMods(list_of_mods, self.format_of_file, self.first_column_file)
 
             minimum, maximum = list_of_mods1.max_min()
-            print(minimum, maximum)
+            
             if self.ir_raman == self.name_obw_1:
                 
                 if self.file_content == self.name_obw_1 or self.file_content == 'Both':

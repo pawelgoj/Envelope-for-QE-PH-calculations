@@ -67,14 +67,14 @@ class CallBacks:
                 self_entry_standard_deviation = float(application_gui.entry_standard_deviation.get())
                 self_entry_scale_param = 0
             except:
-                tk.messagebox.showwarning(message='Insert value to Entry!', title='Warning!')
+                tk.messagebox.showwarning(message='Insert float value to Entry!', title='Warning!')
                 all_correct = False
                 
         elif self_type_bound == 'Lorentz':
             try:
                 self_entry_scale_param = float(application_gui.entry_scale_param.get())
             except:
-                tk.messagebox.showwarning(message='Insert value to Entry!', title='Warning!')
+                tk.messagebox.showwarning(message='Insert float value toEntry!', title='Warning!')
                 all_correct = False
                 
             self_entry_standard_deviation = 0
@@ -84,14 +84,14 @@ class CallBacks:
                 self_entry_scale_param = float(application_gui.entry_scale_param.get())
 
             except:
-                tk.messagebox.showwarning(message='Insert value to Entry!', title='Warning!')
+                tk.messagebox.showwarning(message='Insert float value to Entry!', title='Warning!')
                 all_correct = False
             
         try:
             self_entry_number_of_points = int(application_gui.entry_number_of_points.get())
 
         except:
-            tk.messagebox.showwarning(message='Insert value to Entry!', title='Warning!')
+            tk.messagebox.showwarning(message='Insert integer value to number of points Entry!', title='Warning!')
             all_correct = False
         
         
