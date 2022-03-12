@@ -1,0 +1,2 @@
+<appium.webdriver.webelement.WebElement (session="18973B3B-4F30-4E7B-B273-82A8A8BBF5E5", element="42.1839590")>
+Text in warning:  Chose envelope for IR or/and Raman?
