@@ -5,7 +5,7 @@ Created on Sun Mar 14 19:54:36 2021
 @author: Pawel Goj
 """
 
-from classes import *
+from program.classes import *
 import concurrent.futures 
 import tkinter as tk
 import logging
@@ -26,8 +26,8 @@ def process_envelpe(args: list):
 
 
 class DoEnvelope:
-    def __init__(self, application_gui=None):
-        self.application_gui = application_gui
+    def __init__(self):
+        pass
     
     def set_param(self, format_of_file: str, type_of_band: str, width_band_g: float, width_band_l: float, proportional_to_height: bool,
                  nr_points: int, file, ir_raman: str, raman_envelpe = None, ir_envelpe = None):
@@ -53,8 +53,8 @@ class DoEnvelope:
         except:
             logging.error("Wrong inputs")
             
-    def make_envelopes(self, progress_bar=None):
-        try:
+    def make_envelopes(self, application_gui = None, progress_bar=None):
+        #try:
             if (self.type_of_band != "Gauss" and self.type_of_band != "Lorentz" and self.type_of_band != "Voigt"):
                 
                 logging.error("Wrong name of gauss like curve!!!")
@@ -107,7 +107,7 @@ class DoEnvelope:
             
             if progress_bar:
                 progress_bar['value'] = 20
-                self.application_gui.update_idletasks()
+                application_gui.update_idletasks()
 
             #print("Data loaded")
             list_of_mods1 = ListOfMods(list_of_mods, self.format_of_file, self.first_column_file)
@@ -173,7 +173,7 @@ class DoEnvelope:
             
             if progress_bar:
                 progress_bar['value'] = 30
-                self.application_gui.update_idletasks()
+                application_gui.update_idletasks()
             
             if self.ir_raman != self.name_obw_2 and self.ir_raman != self.name_obw_1:        
                 
@@ -200,7 +200,7 @@ class DoEnvelope:
                 
             if progress_bar:
                 progress_bar['value'] = 60
-                self.application_gui.update_idletasks()
+                application_gui.update_idletasks()
                 
             if self.ir_raman != self.name_obw_1 and self.ir_raman == self.name_obw_2:
                 self.ir_envelpe = Envelope(self.ir, self.nr_points, minimum, maximum, max_ir_intensity)\
@@ -211,7 +211,7 @@ class DoEnvelope:
                 
             if progress_bar:
                 progress_bar['value'] = 100
-                self.application_gui.update_idletasks()
+                application_gui.update_idletasks()
         
             #code procesing np.array to dataframe 
             if self.ir_raman == self.name_obw_1:
@@ -226,9 +226,9 @@ class DoEnvelope:
                             
             self.results = Results(df, wyniki_ir = self.ir_envelpe, wyniki_raman = self.raman_envelpe)
             
-        except:
-            logging.error("Error!")
-            tk.messagebox.showerror(message='Error!', title='Warning!')
+        #except:
+        #    logging.error("Error!")
+        #    tk.messagebox.showerror(message='Error!', title='Warning!')
     
     def save_envelopes(self, path):
 
