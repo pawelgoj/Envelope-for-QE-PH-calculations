@@ -1,7 +1,14 @@
+"""
+@author: Pawel Goj
+"""
+
 import tkinter as tk
 import tkinter.font as font
 from tkinter import BaseWidget, Misc, ttk
 from tkinter import filedialog 
+import sys
+
+from config import Config 
 
 import re
 
@@ -12,8 +19,8 @@ from matplotlib.backends.backend_tkagg import (
 # Implement the default Matplotlib key bindings.
 import matplotlib.pyplot as plt
 
-from menu_functions import MenuFunctions
-from do_envelope import *
+from program.menu_functions import MenuFunctions
+from program.do_envelope import *
 
 #globals 
 file = None
@@ -45,7 +52,7 @@ class CallBacks:
         self_ir_check = ir_check.get()
         
         if self_raman_check == False and self_ir_check == False:
-            tk.messagebox.showwarning(message='Chose envelope for IR or/and Raman?', title='Warning!')
+            tk.messagebox.showwarning(message='Chose envelope for IR or/and Raman!', title='Warning!')
         progress_bar['value'] = 0
         
         if self_raman_check == True and self_ir_check == True:
@@ -105,9 +112,11 @@ class CallBacks:
             progress_bar['value'] = 10
             application_gui.update_idletasks()
             
+            
             do_envelope_object.set_param(file_type, self_type_bound, self_entry_standard_deviation, self_entry_scale_param, 
                                     self_proportional_check, self_entry_number_of_points, file, ir_raman)
-            do_envelope_object.make_envelopes(progress_bar=progress_bar)
+            
+            do_envelope_object.make_envelopes(application_gui = application_gui, progress_bar=progress_bar)
             
             
             fig_ir, fig_raman = do_envelope_object.return_figs()
@@ -331,7 +340,7 @@ class MakeEnvelope(tk.Tk):
         self.appname = 'Envelope for QE PH calculations'
         
         #ico if true all other pop ups have this ico
-        self.iconphoto(True, tk.PhotoImage(file='fig_logo.png'))
+        self.iconphoto(True, tk.PhotoImage(file= Config.path_to_program + r'images/fig_logo.png'))
 
 
         self.resizable(width=True, height=True)
@@ -349,19 +358,19 @@ class MakeEnvelope(tk.Tk):
     def createWidgets(self):
         #globals 
         global image_file_button_input_press
-        image_file_button_input_press = tk.PhotoImage(file = r"plik_dark.png")
+        image_file_button_input_press = tk.PhotoImage(file = Config.path_to_program + r"images/plik_dark.png")
         global image_file_button_input_rellase
-        image_file_button_input_rellase = tk.PhotoImage(file = r"plik.png")
+        image_file_button_input_rellase = tk.PhotoImage(file = Config.path_to_program + r"images/plik.png")
         
         global image_file_button_calculate_press
-        image_file_button_calculate_press = tk.PhotoImage(file = r"proces_dark.png")
+        image_file_button_calculate_press = tk.PhotoImage(file = Config.path_to_program + r"images/proces_dark.png")
         global image_file_button_calculate_rellase
-        image_file_button_calculate_rellase = tk.PhotoImage(file = r"proces.png")
+        image_file_button_calculate_rellase = tk.PhotoImage(file = Config.path_to_program + r"images/proces.png")
         
         global image_file_button_export_data_press
-        image_file_button_export_data_press = tk.PhotoImage(file = r"rysunek_dark.png")
+        image_file_button_export_data_press = tk.PhotoImage(file = Config.path_to_program + r"images/rysunek_dark.png")
         global image_file_button_export_data_rellase
-        image_file_button_export_data_rellase = tk.PhotoImage(file = r"rysunek.png")
+        image_file_button_export_data_rellase = tk.PhotoImage(file = Config.path_to_program + r"images/rysunek.png")
         
         #menu bar 
         
@@ -426,7 +435,7 @@ class MakeEnvelope(tk.Tk):
         
         self.frame_with_buttons = FrameInApp(self.frame, self.background_color)
         self.frame_with_buttons.grid(column=0, row=0, sticky='nw', pady=5)
-        image_file = tk.PhotoImage(file = r"plik.png")
+        image_file = tk.PhotoImage(file = Config.path_to_program + r"images/plik.png")
         image_file = image_file.subsample(1, 1)
         self.button_input_file = ButtonInApp(self.frame_with_buttons, 0, 0, 1, txt='Chose input file', image=image_file, function_app = CallBacks.get_folder_path)
         self.button_input_file.bind('<ButtonPress-1>', CallBacks.press_change_button_input_fig)
@@ -497,7 +506,7 @@ class MakeEnvelope(tk.Tk):
         self.frame_with_image = FrameInApp(self.frame, self.background_color)
         self.frame_with_image.grid(column=0, row=3, sticky='nw')
         
-        self.photo_logo_big = tk.PhotoImage(file = r"fig_logo_white.png")
+        self.photo_logo_big = tk.PhotoImage(file = Config.path_to_program + r"images/fig_logo_white.png")
         self.label_number_of_points = LabelInApp(self.frame_with_image, 0, 1, txt='', rowspan=4)
         self.label_number_of_points.config(image=self.photo_logo_big)
         
@@ -519,7 +528,7 @@ class MakeEnvelope(tk.Tk):
 
         self.frame_precess_button = FrameInApp(self.frame_with_image, self.background_color)
         self.frame_precess_button.grid(column=0, row=1, sticky='w')
-        image_process = tk.PhotoImage(file = r"proces.png")
+        image_process = tk.PhotoImage(file = Config.path_to_program + r"images/proces.png")
         image_process = image_process.subsample(1, 1)
         self.button_start_process = ButtonInApp(self.frame_precess_button, 0, 0, 1, 
                                                 txt='Calculate envelope', image=image_process, 
@@ -528,7 +537,7 @@ class MakeEnvelope(tk.Tk):
         self.button_start_process.bind('<ButtonPress-1>', CallBacks.press_change_button_calculate_fig)
         self.button_start_process.bind('<ButtonRelease-1>', CallBacks.reless_change_button_calculate_fig)
         
-        photo = tk.PhotoImage(file = r"rysunek.png")
+        photo = tk.PhotoImage(file = Config.path_to_program + r"images/rysunek.png")
         photoimage = photo.subsample(1, 1)
         self.button_export_data = ButtonInApp(self.frame_precess_button, 0, 1, 1, txt='Export data',  
                                             image=photoimage, function_app =CallBacks.save_files)
@@ -576,12 +585,21 @@ class MakeEnvelope(tk.Tk):
             
 
 if __name__ == '__main__': 
+    
     global application_gui
+    
     application_gui = MakeEnvelope()
-    do_envelope_object = DoEnvelope(application_gui)
-    application_gui.mainloop() 
+    do_envelope_object = DoEnvelope()
+
+     
 else: 
     print(__name__)
     raise Exception('The __name__ == __main__ !!!!!')
 
-      
+#To force a shutdown
+def on_closing():
+    application_gui.destroy()
+    sys.exit()
+
+application_gui.protocol("WM_DELETE_WINDOW", on_closing)
+application_gui.mainloop()

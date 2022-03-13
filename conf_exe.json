@@ -1,0 +1,81 @@
+{
+ "version": "auto-py-to-exe-configuration_v1",
+ "pyinstallerOptions": [
+  {
+   "optionDest": "noconfirm",
+   "value": true
+  },
+  {
+   "optionDest": "filenames",
+   "value": "D:/Praca/Symulacje/Narzedzia/Moje/Envelope_for_QE/Envelope-for-dynmat-quantum-esspreso/main/user_gui.py"
+  },
+  {
+   "optionDest": "onefile",
+   "value": false
+  },
+  {
+   "optionDest": "console",
+   "value": false
+  },
+  {
+   "optionDest": "icon_file",
+   "value": "D:/Praca/Symulacje/Narzedzia/Moje/Envelope_for_QE/Envelope-for-dynmat-quantum-esspreso/fig_logo_app.ico"
+  },
+  {
+   "optionDest": "name",
+   "value": "Envelope for QE PH calculations"
+  },
+  {
+   "optionDest": "ascii",
+   "value": false
+  },
+  {
+   "optionDest": "clean_build",
+   "value": false
+  },
+  {
+   "optionDest": "strip",
+   "value": false
+  },
+  {
+   "optionDest": "noupx",
+   "value": false
+  },
+  {
+   "optionDest": "version_file",
+   "value": "D:/Praca/Symulacje/Narzedzia/Moje/Envelope_for_QE/Envelope-for-dynmat-quantum-esspreso/version_info.txt"
+  },
+  {
+   "optionDest": "uac_admin",
+   "value": false
+  },
+  {
+   "optionDest": "uac_uiaccess",
+   "value": false
+  },
+  {
+   "optionDest": "win_private_assemblies",
+   "value": false
+  },
+  {
+   "optionDest": "win_no_prefer_redirects",
+   "value": false
+  },
+  {
+   "optionDest": "bootloader_ignore_signals",
+   "value": false
+  },
+  {
+   "optionDest": "datas",
+   "value": "D:/Praca/Symulacje/Narzedzia/Moje/Envelope_for_QE/Envelope-for-dynmat-quantum-esspreso/main/images;images/"
+  },
+  {
+   "optionDest": "datas",
+   "value": "D:/Praca/Symulacje/Narzedzia/Moje/Envelope_for_QE/Envelope-for-dynmat-quantum-esspreso/main/program;program/"
+  }
+ ],
+ "nonPyinstallerOptions": {
+  "increaseRecursionLimit": true,
+  "manualArguments": ""
+ }
+}

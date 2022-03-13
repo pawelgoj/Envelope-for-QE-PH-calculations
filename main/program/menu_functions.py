@@ -1,5 +1,7 @@
+"""
+@author: Pawel Goj
+"""
 
-#TODO prepare this class 
 import webbrowser
 
 

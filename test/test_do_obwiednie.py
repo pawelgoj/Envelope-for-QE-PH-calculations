@@ -1,10 +1,14 @@
+"""
+@author: Pawel Goj
+"""
+
 #import allure
 import pytest
 import os
 import pandas as pd
 import numpy as np
-from classes import Results
-from do_envelope import DoEnvelope 
+from main.program.classes import Results
+from main.program.do_envelope import DoEnvelope 
 import matplotlib.pyplot as plt
 
 

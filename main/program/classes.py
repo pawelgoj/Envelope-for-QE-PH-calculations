@@ -2,8 +2,9 @@
 """
 Created on Sun Mar 14 23:16:18 2021
 
-@author: pagoj
+@author: Pawel Goj
 """
+
 import logging
 import math as math
 from typing import Tuple
@@ -110,7 +111,7 @@ class Dane:
 
                line = file.readline()
            
-       listOfMods =[]
+       list_of_mods =[]
        line = file.readline()
        
        if start_data_read_in_line == "":
@@ -249,7 +250,7 @@ class ListOfMods:
             del x5
             
         else:
-            x1, x2, x3, x4, x5, x6 = zip(*self.listOfMods)
+            x1, x2, x3, x4, x5, x6 = zip(*self.list_of_mods)
             raman = list(zip(x2, x5))
             del x1
             del x2
@@ -295,7 +296,7 @@ class ListOfMods:
             del x4
             
         else:
-            x1, x2, x3, x4, x5, x6 = zip(*self.listOfMods)
+            x1, x2, x3, x4, x5, x6 = zip(*self.list_of_mods)
             ir = list(zip(x2, x4))
             del x1
             del x2
