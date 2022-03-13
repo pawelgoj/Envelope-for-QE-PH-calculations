@@ -6,7 +6,6 @@ Leater versions of Appium-Python-Client not work properly with WinAppDriver 1.2.
 
 
 from appium import webdriver
-from prompt_toolkit import Application
 from selenium.webdriver.common.keys import Keys
 import allure
 from allure_commons.types import AttachmentType

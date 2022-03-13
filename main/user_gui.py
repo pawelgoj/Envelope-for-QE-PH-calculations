@@ -52,7 +52,7 @@ class CallBacks:
         self_ir_check = ir_check.get()
         
         if self_raman_check == False and self_ir_check == False:
-            tk.messagebox.showwarning(message='Chose envelope for IR or/and Raman?', title='Warning!')
+            tk.messagebox.showwarning(message='Chose envelope for IR or/and Raman!', title='Warning!')
         progress_bar['value'] = 0
         
         if self_raman_check == True and self_ir_check == True:

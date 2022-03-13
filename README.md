@@ -6,9 +6,10 @@ The application generates envelopes for intensities of the calculated theoretica
 
 ![Window of app Envelope for QE PH calculations](Window.png "Window of app Envelope for QE PH calculations")
 
+
 ## Usage
 
-Complete the form and press `<Calculate envelope>` button to calculate envelope.
+If you want to use exe file for windows download "Envelope for QE PH calculations.zip" (find it in Releases) and unpack it. Run program "Envelope for QE PH calculations.exe" in unpacked folder. Complete the form and press `<Calculate envelope>` button to calculate envelope.
 
 ### Input files
 
@@ -41,3 +42,11 @@ Calculated envelopes can be exported to '.csv' file.
 5. Numpy
 6. SciPy
 7. Pandas
+
+## Tests
+
+### Tools:
+
+1. Appium-Python-Client 1.3 + WinAppDriver 1.2.1
+2. pytest 
+3. allure 
