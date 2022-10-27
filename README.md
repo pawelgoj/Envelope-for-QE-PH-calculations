@@ -2,7 +2,7 @@
 
 ## Description
 
-The application generates envelopes for intensities of the calculated theoretical spectra of IR and Raman. You can generate an envelope for a output from dynmat.x ( [Quantum espresso](https://www.quantum-espresso.org/)) or appropriate '.txt' file.
+The application generates envelopes for intensities of a calculated theoretical IR and Raman spectra. You can generate an envelope for a output from dynmat.x ( [Quantum espresso](https://www.quantum-espresso.org/)) or appropriate '.txt' file.
 
 ![Window of app Envelope for QE PH calculations](Gif.gif "Window of app Envelope for QE PH calculations")
 
