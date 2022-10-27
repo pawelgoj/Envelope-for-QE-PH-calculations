@@ -223,41 +223,22 @@ class ListOfMods:
         if len(self.list_of_mods[0]) == 2:
             x1, x2 = zip(*self.list_of_mods)
             raman = list(zip(x1, x2))
-            del x1
-            del x2
             
         elif len(self.list_of_mods[0]) == 3 and self.first_column_file == 'IR':
-            x1, x2, x3 = zip(*self.list_of_mods)
+            x1, _, x3 = zip(*self.list_of_mods)
             raman = list(zip(x1, x3))
-            del x1 
-            del x2
-            del x3
             
         elif len(self.list_of_mods[0]) == 3 and self.first_column_file == 'Raman':
-            x1, x2, x3 = zip(*self.list_of_mods)
+            x1, x2, _ = zip(*self.list_of_mods)
             raman = list(zip(x1, x2))
-            del x1 
-            del x2
-            del x3
             
         elif len(self.list_of_mods[0]) == 5:
-            x1, x2, x3, x4, x5 = zip(*self.list_of_mods)
+            _, x2, _, x4, _ = zip(*self.list_of_mods)
             raman = list(zip(x2, x4))
-            del x1 
-            del x2
-            del x3
-            del x4
-            del x5
             
         else:
-            x1, x2, x3, x4, x5, x6 = zip(*self.list_of_mods)
+            _, x2, _, _, x5, _ = zip(*self.list_of_mods)
             raman = list(zip(x2, x5))
-            del x1
-            del x2
-            del x3 
-            del x4
-            del x5
-            del x6
             
         return raman
 
@@ -270,40 +251,22 @@ class ListOfMods:
         if len(self.list_of_mods[0]) == 2:
             x1, x2 = zip(*self.list_of_mods)
             ir = list(zip(x1, x2))
-            del x1
-            del x2
             
         elif len(self.list_of_mods[0]) == 3 and self.first_column_file == 'IR':
-            x1, x2, x3 = zip(*self.list_of_mods)
+            x1, x2, _ = zip(*self.list_of_mods)
             ir = list(zip(x1, x2))
-            del x1 
-            del x2
-            del x3
             
         elif len(self.list_of_mods[0]) == 3 and self.first_column_file == 'Raman':
-            x1, x2, x3 = zip(*self.list_of_mods)
+            x1, _, x3 = zip(*self.list_of_mods)
             ir = list(zip(x1, x3))
-            del x1 
-            del x2
-            del x3
             
         elif len(self.list_of_mods[0]) == 4:
-            x1, x2, x3, x4 = zip(*self.list_of_mods)
+            _, x2, _, x4 = zip(*self.list_of_mods)
             ir = list(zip(x2, x4))
-            del x1 
-            del x2
-            del x3
-            del x4
             
         else:
-            x1, x2, x3, x4, x5, x6 = zip(*self.list_of_mods)
+            _, x2, _, x4, _, _ = zip(*self.list_of_mods)
             ir = list(zip(x2, x4))
-            del x1
-            del x2
-            del x3 
-            del x4
-            del x5
-            del x6
             
         return ir
 
@@ -460,5 +423,4 @@ class Results:
             ax_raman.stem(x, y, markerfmt='none', linefmt='red', basefmt='none')
             fig_raman.subplots_adjust(bottom=0.15, left=0.15)
         
-
         return fig_ir, fig_raman

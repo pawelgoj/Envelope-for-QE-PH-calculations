@@ -4,7 +4,7 @@
 
 The application generates envelopes for intensities of the calculated theoretical spectra of IR and Raman. You can generate an envelope for a output from dynmat.x ( [Quantum espresso](https://www.quantum-espresso.org/)) or appropriate '.txt' file.
 
-![Window of app Envelope for QE PH calculations](Window.png "Window of app Envelope for QE PH calculations")
+![Window of app Envelope for QE PH calculations](Gif.gif "Window of app Envelope for QE PH calculations")
 
 
 ## Usage
@@ -50,3 +50,14 @@ Calculated envelopes can be exported to '.csv' file.
 1. Appium-Python-Client 1.3 + WinAppDriver 1.2.1
 2. pytest 
 3. allure 
+
+## How cite 
+If you would like to cite the program in your work. The information below is provided.
+
+### Script was written by Paweł Goj and first used in: 
+
+1.	Goj, P., Handke, B. & Stoch, P. Vibrational characteristics of aluminum–phosphate compounds by an experimental and theoretical approach. Sci. Rep. 12, 17495 (2022) doi:10.1038/s41598-022-22432-5.
+
+### The script uses the SciPy library: 
+
+2.	Virtanen, P. et al. SciPy 1.0: fundamental algorithms for scientific computing in Python. Nat. Methods 17, 261–272 (2020) doi:10.1038/s41592-019-0686-2.
